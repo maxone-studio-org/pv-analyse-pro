@@ -60,7 +60,14 @@ export function MonthSummary() {
             <Row label="Netzbezug" ist={summary.netzbezug} sim={summary.netzbezugSim} />
             <Row label="Sp. geladen" sim={summary.geladen} />
             <Row label="Sp. entladen" sim={summary.entladen} />
-            <tr className="border-t-2 border-gray-300">
+            <tr className="border-t-2 border-gray-300 bg-amber-50">
+              <td className="px-3 py-2 font-semibold text-amber-800">Ersparnis Netzbezug</td>
+              <td className="px-3 py-2 text-right">—</td>
+              <td className="px-3 py-2 text-right font-semibold text-amber-600">
+                {(summary.netzbezug - summary.netzbezugSim).toFixed(2)} kWh
+              </td>
+            </tr>
+            <tr className="border-gray-300">
               <td className="px-3 py-2 font-medium">Autarkiegrad</td>
               <td className="px-3 py-2 text-right">{summary.autarkieOhne.toFixed(1)} %</td>
               <td className="px-3 py-2 text-right font-semibold text-amber-600">

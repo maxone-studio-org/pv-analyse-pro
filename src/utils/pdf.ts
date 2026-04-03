@@ -196,6 +196,7 @@ export function generateMonthlyPdf(options: PdfExportOptions): ArrayBuffer {
       ['Netzbezug', mTotals.netzbezug.toFixed(2), mTotals.netzbezugSim.toFixed(2)],
       ['Sp. geladen', '—', mTotals.geladen.toFixed(2)],
       ['Sp. entladen', '—', mTotals.entladen.toFixed(2)],
+      ['Ersparnis Netzbezug', '—', (mTotals.netzbezug - mTotals.netzbezugSim).toFixed(2)],
       ['Autarkiegrad', `${autarkieOhne.toFixed(1)} %`, `${autarkieMit.toFixed(1)} %`],
     ],
     styles: { fontSize: 9, font: 'helvetica' },
