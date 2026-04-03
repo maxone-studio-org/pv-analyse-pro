@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Header } from './components/Header'
 import { CsvImport } from './components/CsvImport'
 import { ColumnMapping } from './components/ColumnMapping'
@@ -7,10 +8,13 @@ import { Calendar } from './components/Calendar'
 import { MonthSummary } from './components/MonthSummary'
 import { DayDetailModal } from './components/DayDetailModal'
 import { ExportPanel } from './components/ExportPanel'
+import { LandingBanner } from './components/LandingBanner'
+import { LandingOverlay } from './components/LandingOverlay'
 import { useAppStore } from './store'
 
 function App() {
   const importStep = useAppStore((s) => s.importStep)
+  const [landingOpen, setLandingOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -18,6 +22,9 @@ function App() {
 
       {/* Import area */}
       <CsvImport />
+      {importStep === 'idle' && (
+        <LandingBanner onOpen={() => setLandingOpen(true)} />
+      )}
       <ColumnMapping />
 
       {/* Main content */}
@@ -43,6 +50,9 @@ function App() {
 
       {/* Modal */}
       <DayDetailModal />
+
+      {/* Landing page overlay */}
+      <LandingOverlay open={landingOpen} onClose={() => setLandingOpen(false)} />
     </div>
   )
 }
