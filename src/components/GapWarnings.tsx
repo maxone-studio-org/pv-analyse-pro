@@ -28,15 +28,15 @@ export function GapWarnings() {
           </svg>
           <div>
             <p className="text-sm font-semibold text-red-800">
-              Datenvollständigkeit: {dataGaps.length} Lücke{dataGaps.length !== 1 && 'n'} erkannt
-              {totalOverlaps > 0 && `, ${totalOverlaps} Überlappung${totalOverlaps !== 1 ? 'en' : ''} bereinigt`}
+              In deinen Daten fehlen Zeiträume
             </p>
-            {dataGaps.length > 0 && (
-              <p className="text-xs text-red-700 mt-0.5">
-                Gesamtdauer ohne Daten: {formatTotalHours(totalGapHours)}.
-                Simulation hat für diese Zeiträume keine Grundlage — im PDF dokumentiert.
-              </p>
-            )}
+            <p className="text-xs text-red-700 mt-0.5">
+              {dataGaps.length} Lücke{dataGaps.length !== 1 ? 'n' : ''} erkannt
+              {totalOverlaps > 0 && `, ${totalOverlaps} Überlappung${totalOverlaps !== 1 ? 'en' : ''} bereinigt`}.
+              {dataGaps.length > 0 && ` Insgesamt ${formatTotalHours(totalGapHours)} ohne Daten.`}
+              {' '}Das kann passieren wenn der Wechselrichter offline war oder der Export unvollständig ist.
+              Diese Lücken sind im PDF dokumentiert — dein Anwalt sollte wissen, dass für diese Zeiträume keine Simulation möglich war.
+            </p>
           </div>
         </div>
       </div>

@@ -31,10 +31,11 @@ export function ColumnMapping() {
   return (
     <div className="p-6 space-y-6">
       <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Spalten-Mapping</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-2">Spalten-Mapping</h2>
         <p className="text-sm text-gray-600 mb-6">
-          Ordne die Spalten deiner CSV-Datei den internen Feldern zu.
-          Pflichtfelder sind mit * markiert.
+          Verschiedene Hersteller benennen ihre Spalten unterschiedlich.
+          Ordne hier einmalig zu, welche Spalte deiner Datei welchem Messwert entspricht.
+          Das dauert nur wenige Sekunden — die meisten Felder sind bereits vorbelegt.
         </p>
 
         {/* Combined datetime hint */}
@@ -42,14 +43,13 @@ export function ColumnMapping() {
           <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
             <p className="text-xs text-amber-800">
               <span className="font-semibold">Kombinierter Zeitstempel erkannt.</span>{' '}
-              Datum und Uhrzeit sind in einer Spalte (z.B. "26.10.2021 13:03:58"). Die Trennung erfolgt automatisch.
+              Datum und Uhrzeit stehen in einer Spalte (z.B. "26.10.2021 13:03:58"). Die Trennung erfolgt automatisch.
             </p>
           </div>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
           {INTERNAL_FIELDS.map((field) => {
-            // Hide uhrzeit when combined datetime detected
             if (field === 'uhrzeit' && isCombined) return null
 
             const isRequired = REQUIRED_DISPLAY.includes(field)
@@ -63,7 +63,6 @@ export function ColumnMapping() {
                   value={columnMapping[field] ?? ''}
                   onChange={(e) => {
                     setMapping(field, e.target.value)
-                    // If datum is set and matches uhrzeit → mark combined
                     if (field === 'datum' && e.target.value) {
                       if (columnMapping.uhrzeit === e.target.value || !columnMapping.uhrzeit) {
                         setMapping('uhrzeit', e.target.value)
@@ -101,7 +100,7 @@ export function ColumnMapping() {
           <label htmlFor="utc-toggle" className="text-sm text-gray-700">
             Zeitstempel in der CSV sind bereits in UTC
             <span className="block text-xs text-gray-500">
-              (Standard: Lokalzeit Europe/Berlin)
+              (Normalerweise nicht — lass diese Option deaktiviert wenn du unsicher bist)
             </span>
           </label>
         </div>
@@ -117,7 +116,7 @@ export function ColumnMapping() {
 
         {/* Preview table */}
         <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Vorschau (erste 5 Zeilen)</h3>
+          <h3 className="text-sm font-medium text-gray-700 mb-2">Vorschau (erste 5 Zeilen deiner Datei)</h3>
           <div className="overflow-x-auto">
             <table className="min-w-full text-xs">
               <thead>

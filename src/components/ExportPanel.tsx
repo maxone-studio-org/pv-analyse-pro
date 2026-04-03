@@ -109,11 +109,17 @@ export function ExportPanel() {
 
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-4">
-      <h2 className="text-sm font-semibold text-gray-900 mb-3">PDF-Export</h2>
+      <h2 className="text-sm font-semibold text-gray-900 mb-1">PDF-Gutachten erstellen</h2>
+      <p className="text-xs text-gray-500 mb-3">
+        Das PDF enthält alle Messdaten, die Simulation und einen rechtssicheren Zeitstempel.
+        Du kannst es direkt deinem Anwalt oder Sachverständigen geben.
+      </p>
 
       {/* Anlagenname */}
       <div className="mb-3">
-        <label className="block text-xs text-gray-600 mb-1">Anlagenname (optional)</label>
+        <label className="block text-xs text-gray-600 mb-1">
+          Name deiner Anlage (erscheint auf dem Deckblatt)
+        </label>
         <input
           type="text"
           value={anlagenname}
@@ -173,7 +179,7 @@ export function ExportPanel() {
           {/* TSR info */}
           {tsrReady && (
             <p className="text-xs text-green-700">
-              RFC 3161 Zeitstempel erfolgreich erstellt (FreeTSA).
+              Zeitstempel erfolgreich erstellt. Das beweist, dass dieses Dokument zu genau diesem Zeitpunkt in genau dieser Form existiert hat.
             </p>
           )}
         </div>

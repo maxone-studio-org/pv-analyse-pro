@@ -19,7 +19,7 @@ export function ImportWarnings() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
         <span className="text-sm text-green-700">
-          {totalRows} Zeilen erfolgreich importiert ({days.length} Tage)
+          Deine Daten wurden erfolgreich geladen: {totalRows} Messwerte an {days.length} Tagen.
         </span>
       </div>
 
@@ -27,7 +27,8 @@ export function ImportWarnings() {
       {parseErrors.length > 0 && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3">
           <p className="text-sm font-medium text-yellow-800 mb-1">
-            {parseErrors.length} Zeilen mit Fehlern:
+            {parseErrors.length} Zeilen konnten nicht gelesen werden.
+            Das betrifft die Auswertung nicht — die restlichen Daten sind vollständig.
           </p>
           <ul className="text-xs text-yellow-700 space-y-0.5 max-h-24 overflow-y-auto">
             {parseErrors.slice(0, 10).map((e, i) => (
@@ -43,7 +44,11 @@ export function ImportWarnings() {
       {/* DST warnings */}
       {dstWarnings.length > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
-          <p className="text-sm font-medium text-blue-800 mb-1">Zeitzonenwarnungen:</p>
+          <p className="text-sm font-medium text-blue-800 mb-1">Hinweis zur Zeitumstellung:</p>
+          <p className="text-xs text-blue-700 mb-1">
+            An den folgenden Tagen gab es eine Sommer-/Winterzeitumstellung.
+            Das ist normal und wird korrekt behandelt.
+          </p>
           <ul className="text-xs text-blue-700 space-y-0.5">
             {dstWarnings.map((w, i) => (
               <li key={i}>{w.message}</li>
