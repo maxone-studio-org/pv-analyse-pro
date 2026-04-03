@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import type { DayData, DaySimulation, FileMetadata, SimulationParams } from '../types'
+import type { DataGap, DayData, DaySimulation, FileMetadata, SimulationParams } from '../types'
 
 interface PdfExportOptions {
   month: string // YYYY-MM
@@ -9,6 +9,8 @@ interface PdfExportOptions {
   simResults: DaySimulation[]
   params: SimulationParams
   fileMetadataList: FileMetadata[]
+  dataGaps: DataGap[]
+  overlapCount: number
   socChartImage?: string // base64 data URL
   evChartImage?: string  // base64 data URL
 }
@@ -35,7 +37,7 @@ function formatBytes(bytes: number): string {
 }
 
 export function generateMonthlyPdf(options: PdfExportOptions): ArrayBuffer {
-  const { month, anlagenname, days, simResults, params, fileMetadataList, socChartImage, evChartImage } = options
+  const { month, anlagenname, days, simResults, params, fileMetadataList, dataGaps, overlapCount, socChartImage, evChartImage } = options
 
   const [yearStr, monthStr] = month.split('-')
   const monthName = MONTHS[parseInt(monthStr) - 1]
@@ -153,6 +155,92 @@ export function generateMonthlyPdf(options: PdfExportOptions): ArrayBuffer {
   )
   doc.setTextColor(0, 0, 0)
   y += 8
+
+  // Datenvollständigkeit
+  if (dataGaps.length > 0 || overlapCount > 0) {
+    // Check if we need a new page
+    if (y > 240) {
+      doc.addPage()
+      y = 20
+    }
+
+    doc.setFontSize(11)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(180, 0, 0)
+    doc.text('Datenvollständigkeit — Lückenprotokoll', margin, y)
+    doc.setTextColor(0, 0, 0)
+    y += 7
+
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+
+    const totalGapHours = dataGaps.reduce((s, g) => s + g.durationHours, 0)
+    doc.text(
+      `${dataGaps.length} Lücke${dataGaps.length !== 1 ? 'n' : ''} erkannt. Gesamtdauer ohne Daten: ${totalGapHours < 24 ? totalGapHours.toFixed(1) + ' Stunden' : (totalGapHours / 24).toFixed(1) + ' Tage'}.`,
+      margin, y
+    )
+    y += 5
+
+    if (overlapCount > 0) {
+      doc.text(
+        `${overlapCount} Überlappung${overlapCount !== 1 ? 'en' : ''} zwischen Dateien bereinigt (erste Datei hat Vorrang).`,
+        margin, y
+      )
+      y += 5
+    }
+
+    doc.setFontSize(8)
+    doc.setTextColor(100, 100, 100)
+    doc.text(
+      'Die Simulation hat für die genannten Zeiträume keine Datengrundlage. Die simulierten Werte',
+      margin, y
+    )
+    y += 3.5
+    doc.text(
+      'beziehen sich ausschließlich auf Zeiträume mit vorhandenen Messdaten.',
+      margin, y
+    )
+    doc.setTextColor(0, 0, 0)
+    y += 5
+
+    // Gap table
+    if (dataGaps.length > 0) {
+      autoTable(doc, {
+        startY: y,
+        margin: { left: margin, right: margin },
+        head: [['Typ', 'Zeitraum', 'Dauer', 'Beschreibung']],
+        body: dataGaps.slice(0, 30).map((g) => [
+          g.type === 'missing_days' ? 'Fehlende Tage' :
+          g.type === 'missing_intervals' ? 'Fehlende Intervalle' : 'Überlappung',
+          `${g.from} – ${g.to}`,
+          g.durationHours < 1 ? `${Math.round(g.durationHours * 60)} Min.` :
+          g.durationHours < 24 ? `${g.durationHours.toFixed(1)} Std.` :
+          `${(g.durationHours / 24).toFixed(1)} Tage`,
+          g.message,
+        ]),
+        styles: { fontSize: 7, font: 'helvetica', cellPadding: 1.5 },
+        headStyles: { fillColor: [180, 0, 0], textColor: 255, fontSize: 7 },
+        alternateRowStyles: { fillColor: [255, 245, 245] },
+        columnStyles: {
+          0: { cellWidth: 25 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 18 },
+          3: { cellWidth: 'auto' },
+        },
+      })
+
+      if (dataGaps.length > 30) {
+        const tableEnd = (doc as unknown as Record<string, Record<string, number>>).lastAutoTable?.finalY ?? y + 20
+        doc.setFontSize(7)
+        doc.setTextColor(150, 150, 150)
+        doc.text(`... und ${dataGaps.length - 30} weitere Lücken.`, margin, tableEnd + 4)
+        doc.setTextColor(0, 0, 0)
+      }
+    }
+
+    y = (doc as unknown as Record<string, Record<string, number>>).lastAutoTable?.finalY ?? y
+    y += 8
+  }
 
   // Disclaimer
   doc.setDrawColor(200, 200, 200)

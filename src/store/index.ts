@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type {
   ColumnMapping,
+  DataGap,
   DayData,
   DaySimulation,
   DstWarning,
@@ -11,6 +12,7 @@ import { autoDetectMapping, parseCSVPreview, parseCSVWithMapping, validateMappin
 import { processRawData } from '../utils/timezone'
 import { runSimulation } from '../utils/simulation'
 import { computeSHA256 } from '../utils/hash'
+import { detectDataGaps, deduplicateIntervals } from '../utils/gapDetection'
 
 export type ImportStep = 'idle' | 'mapping' | 'done'
 
@@ -27,6 +29,8 @@ interface AppState {
   days: DayData[]
   importErrors: { line: number; message: string }[]
   dstWarnings: DstWarning[]
+  dataGaps: DataGap[]
+  overlapCount: number
 
   // Simulation
   simulationParams: SimulationParams
@@ -59,6 +63,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   days: [],
   importErrors: [],
   dstWarnings: [],
+  dataGaps: [],
+  overlapCount: 0,
   simulationParams: {
     kapazitaet_kwh: 10,
     entladetiefe_pct: 90,
@@ -147,7 +153,13 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
 
     const { rows, errors: parseErrors } = parseCSVWithMapping(csvText, columnMapping)
-    const { days, warnings } = processRawData(rows, inputIsUTC)
+    const { days: rawDays, warnings } = processRawData(rows, inputIsUTC)
+
+    // Deduplicate overlapping intervals (first file wins)
+    const { days, overlapCount } = deduplicateIntervals(rawDays)
+
+    // Detect data gaps (missing days, missing intervals)
+    const dataGaps = detectDataGaps(days)
 
     // Auto-select first month
     const firstMonth = days.length > 0 ? days[0].date.substring(0, 7) : null
@@ -159,6 +171,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       days,
       importErrors: parseErrors,
       dstWarnings: warnings,
+      dataGaps,
+      overlapCount,
       importStep: 'done',
       selectedMonth: firstMonth,
       simulationResults,
@@ -176,6 +190,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       days: [],
       importErrors: [],
       dstWarnings: [],
+      dataGaps: [],
+      overlapCount: 0,
       simulationResults: [],
       selectedMonth: null,
       selectedDay: null,

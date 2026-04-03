@@ -3,6 +3,7 @@ import { Header } from './components/Header'
 import { CsvImport } from './components/CsvImport'
 import { ColumnMapping } from './components/ColumnMapping'
 import { ImportWarnings } from './components/ImportWarnings'
+import { GapWarnings } from './components/GapWarnings'
 import { SimulationConfig } from './components/SimulationConfig'
 import { Calendar } from './components/Calendar'
 import { MonthSummary } from './components/MonthSummary'
@@ -31,6 +32,7 @@ function App() {
       {importStep === 'done' && (
         <div className="px-6 py-4 space-y-4">
           <ImportWarnings />
+          <GapWarnings />
 
           <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4">
             {/* Sidebar */}

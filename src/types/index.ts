@@ -88,3 +88,19 @@ export interface DstWarning {
   type: 'missing_hour' | 'double_hour'
   message: string
 }
+
+/** Data gap detected after merge */
+export interface DataGap {
+  type: 'missing_days' | 'missing_intervals' | 'overlap'
+  from: string // ISO timestamp or YYYY-MM-DD
+  to: string
+  durationHours: number
+  message: string
+}
+
+/** Overlap entry: duplicate timestamps from multiple files */
+export interface DataOverlap {
+  date: string
+  count: number // how many duplicate intervals
+  resolution: 'first' // which source won
+}
