@@ -1,0 +1,87 @@
+/** Raw CSV row after column mapping */
+export interface RawDataRow {
+  datum: string
+  uhrzeit: string
+  erzeugung_kwh: number
+  verbrauch_kwh: number
+  einspeisung_kwh: number | null
+  netzbezug_kwh: number | null
+}
+
+/** Single measurement interval with UTC timestamp */
+export interface MeasurementInterval {
+  timestamp: Date // UTC
+  erzeugung_kwh: number
+  verbrauch_kwh: number
+  einspeisung_kwh: number
+  netzbezug_kwh: number
+}
+
+/** Aggregated day data */
+export interface DayData {
+  date: string // YYYY-MM-DD
+  intervals: MeasurementInterval[]
+  totals: {
+    erzeugung_kwh: number
+    verbrauch_kwh: number
+    einspeisung_kwh: number
+    netzbezug_kwh: number
+  }
+}
+
+/** Column mapping: internal field name → CSV column header */
+export type ColumnMapping = Record<string, string>
+
+/** Known CSV column synonyms per manufacturer */
+export interface ManufacturerProfile {
+  name: string
+  synonyms: Record<string, string[]>
+}
+
+/** Simulation parameters */
+export interface SimulationParams {
+  kapazitaet_kwh: number
+  entladetiefe_pct: number
+  ladewirkungsgrad_pct: number
+  entladewirkungsgrad_pct: number
+  anfangs_soc_pct: number
+}
+
+/** Simulation result per interval */
+export interface SimulationInterval {
+  timestamp: Date
+  soc_kwh: number
+  geladen_kwh: number
+  entladen_kwh: number
+  netzbezug_sim_kwh: number
+  einspeisung_sim_kwh: number
+}
+
+/** Simulation result per day */
+export interface DaySimulation {
+  date: string
+  intervals: SimulationInterval[]
+  totals: {
+    geladen_kwh: number
+    entladen_kwh: number
+    netzbezug_sim_kwh: number
+    einspeisung_sim_kwh: number
+    soc_min_kwh: number
+    soc_max_kwh: number
+  }
+}
+
+/** File metadata captured at upload */
+export interface FileMetadata {
+  name: string
+  size: number
+  sha256: string
+  importTimestamp: Date
+}
+
+/** DST warning for display */
+export interface DstWarning {
+  date: string
+  type: 'missing_hour' | 'double_hour'
+  message: string
+}

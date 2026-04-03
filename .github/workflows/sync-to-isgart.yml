@@ -1,0 +1,18 @@
+name: Sync to Isgart1984/pv-analyse-pro
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to Isgart1984/pv-analyse-pro
+        run: |
+          git remote add target https://x-access-token:${{ secrets.ISGART_SYNC_TOKEN }}@github.com/Isgart1984/pv-analyse-pro.git
+          git push target main --force
