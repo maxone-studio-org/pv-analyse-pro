@@ -13,16 +13,18 @@ jobs:
       - name: Build Docker image
         run: docker build -t solarproof-app:latest .
 
-      - name: Deploy
+      - name: Transfer image to voltfair-cli
         run: |
-          mkdir -p /opt/solarproof
-          cp docker-compose.yml /opt/solarproof/docker-compose.yml
-          cp nginx.conf /opt/solarproof/nginx.conf
-          cd /opt/solarproof
-          docker compose up -d
-          docker image prune -f
+          docker save solarproof-app:latest | gzip | ssh -o StrictHostKeyChecking=no root@46.225.107.118 'gunzip | docker load'
+
+      - name: Deploy on voltfair-cli
+        run: |
+          ssh -o StrictHostKeyChecking=no root@46.225.107.118 'cd /opt/solarproof && docker compose up -d && docker image prune -f'
+
+      - name: Cleanup local image
+        run: docker rmi solarproof-app:latest 2>/dev/null || true
 
       - name: Health check
         run: |
           sleep 3
-          curl -sf http://localhost:$(docker port solarproof-app 80 | head -1 | cut -d: -f2)/ > /dev/null && echo "SolarProof is healthy" || echo "Health check failed"
+          ssh -o StrictHostKeyChecking=no root@46.225.107.118 'curl -sf http://localhost:$(docker port solarproof-app 80 | head -1 | cut -d: -f2)/ > /dev/null' && echo "SolarProof is healthy" || echo "Health check failed"
