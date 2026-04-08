@@ -1,10 +1,14 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useAppStore } from '../store'
 
 const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
-const MONTHS = [
+const MONTHS_FULL = [
   'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
   'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
+]
+const MONTHS_SHORT = [
+  'Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez',
 ]
 
 export function Calendar() {
@@ -14,11 +18,26 @@ export function Calendar() {
   const setSelectedDay = useAppStore((s) => s.setSelectedDay)
   const importStep = useAppStore((s) => s.importStep)
 
+  const [pickerOpen, setPickerOpen] = useState(false)
+
   const availableMonths = useMemo(() => {
     const months = new Set<string>()
     for (const d of days) months.add(d.date.substring(0, 7))
     return [...months].sort()
   }, [days])
+
+  // Group available months by year for the picker
+  const yearMap = useMemo(() => {
+    const map = new Map<number, Set<number>>() // year → set of 0-based month indices
+    for (const m of availableMonths) {
+      const [y, mo] = m.split('-').map(Number)
+      if (!map.has(y)) map.set(y, new Set())
+      map.get(y)!.add(mo - 1)
+    }
+    return map
+  }, [availableMonths])
+
+  const availableYears = useMemo(() => [...yearMap.keys()].sort(), [yearMap])
 
   const calendarGrid = useMemo(() => {
     if (!selectedMonth) return []
@@ -27,7 +46,6 @@ export function Calendar() {
     const firstDay = new Date(year, month - 1, 1)
     const lastDay = new Date(year, month, 0)
 
-    // Monday = 0, Sunday = 6
     let startDow = firstDay.getDay() - 1
     if (startDow < 0) startDow = 6
 
@@ -37,7 +55,6 @@ export function Calendar() {
 
     const grid: { day: number; date: string; hasData: boolean }[] = []
 
-    // Empty cells before first day
     for (let i = 0; i < startDow; i++) {
       grid.push({ day: 0, date: '', hasData: false })
     }
@@ -64,6 +81,11 @@ export function Calendar() {
     if (idx < availableMonths.length - 1) setSelectedMonth(availableMonths[idx + 1])
   }
 
+  const jumpToMonth = (m: string) => {
+    setSelectedMonth(m)
+    setPickerOpen(false)
+  }
+
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-6">
       {/* Navigation */}
@@ -77,9 +99,23 @@ export function Calendar() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <h2 className="text-lg font-semibold text-gray-900">
-          {MONTHS[month - 1]} {year}
-        </h2>
+
+        {/* Clickable month/year label → opens picker */}
+        <button
+          onClick={() => setPickerOpen(!pickerOpen)}
+          className="flex items-center gap-1.5 px-3 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          <h2 className="text-lg font-semibold text-gray-900">
+            {MONTHS_FULL[month - 1]} {year}
+          </h2>
+          <svg
+            className={`w-4 h-4 text-gray-400 transition-transform ${pickerOpen ? 'rotate-180' : ''}`}
+            fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
         <button
           onClick={nextMonth}
           disabled={availableMonths.indexOf(selectedMonth) === availableMonths.length - 1}
@@ -90,6 +126,41 @@ export function Calendar() {
           </svg>
         </button>
       </div>
+
+      {/* Month/Year picker */}
+      {pickerOpen && (
+        <div className="mb-4 border border-gray-200 rounded-lg p-3 bg-gray-50">
+          {availableYears.map((yr) => (
+            <div key={yr} className="mb-2 last:mb-0">
+              <p className="text-xs font-semibold text-gray-500 mb-1">{yr}</p>
+              <div className="grid grid-cols-6 gap-1">
+                {Array.from({ length: 12 }, (_, i) => {
+                  const monthKey = `${yr}-${String(i + 1).padStart(2, '0')}`
+                  const hasData = yearMap.get(yr)?.has(i) ?? false
+                  const isSelected = monthKey === selectedMonth
+
+                  return (
+                    <button
+                      key={i}
+                      disabled={!hasData}
+                      onClick={() => jumpToMonth(monthKey)}
+                      className={`text-xs py-1 px-1 rounded transition-colors ${
+                        isSelected
+                          ? 'bg-amber-500 text-white font-semibold'
+                          : hasData
+                            ? 'bg-white hover:bg-amber-50 text-gray-700 font-medium border border-gray-200'
+                            : 'text-gray-300 cursor-not-allowed'
+                      }`}
+                    >
+                      {MONTHS_SHORT[i]}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Weekday headers */}
       <div className="grid grid-cols-7 gap-1 mb-1">
