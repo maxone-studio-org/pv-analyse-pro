@@ -13,6 +13,8 @@ import { LandingBanner } from './components/LandingBanner'
 import { LandingOverlay } from './components/LandingOverlay'
 import { DuplicateDialog } from './components/DuplicateDialog'
 import { CreditsOverlay } from './components/CreditsOverlay'
+import { CostComparison } from './components/CostComparison'
+import { FeedbackButton } from './components/FeedbackButton'
 import { useAppStore } from './store'
 
 function App() {
@@ -44,6 +46,7 @@ function App() {
             {/* Sidebar */}
             <div className="space-y-4">
               <SimulationConfig />
+              <CostComparison />
               <ExportPanel />
             </div>
 
@@ -60,6 +63,9 @@ function App() {
       <DayDetailModal />
       <LandingOverlay open={landingOpen} onClose={() => setLandingOpen(false)} />
       <CreditsOverlay open={creditsOpen} onClose={() => setCreditsOpen(false)} />
+
+      {/* Feedback button */}
+      <FeedbackButton />
 
       {/* Duplicate detection dialog */}
       {duplicateInfo && (
