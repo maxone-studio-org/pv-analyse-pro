@@ -95,6 +95,11 @@ export function SimulationConfig() {
               value={params[key]}
               onChange={(e) => setParam(key, parseFloat(e.target.value))}
               className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
+              aria-label={`${label} in ${unit}`}
+              aria-valuenow={params[key]}
+              aria-valuemin={min}
+              aria-valuemax={max}
+              aria-valuetext={`${params[key]} ${unit}`}
             />
           </div>
         ))}

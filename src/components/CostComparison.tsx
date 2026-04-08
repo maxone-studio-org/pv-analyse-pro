@@ -227,10 +227,14 @@ function NumberInput({
   step?: number
   onChange: (v: number) => void
 }) {
+  const inputId = `cost-${label.replace(/\s+/g, '-').toLowerCase()}`
+  const helpId = `${inputId}-help`
+
   return (
     <div>
-      <label className="block text-xs text-gray-600 mb-0.5">{label}</label>
+      <label htmlFor={inputId} className="block text-xs text-gray-600 mb-0.5">{label}</label>
       <input
+        id={inputId}
         type="number"
         min={0}
         step={step}
@@ -238,8 +242,9 @@ function NumberInput({
         onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
         placeholder="0"
         className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
+        aria-describedby={helpId}
       />
-      <p className="text-xs text-gray-400 mt-0.5">{help}</p>
+      <p id={helpId} className="text-xs text-gray-400 mt-0.5">{help}</p>
     </div>
   )
 }

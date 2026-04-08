@@ -4,19 +4,28 @@ import { useAppStore } from '../store'
 export function CsvImport() {
   const loadFiles = useAppStore((s) => s.loadFiles)
   const importStep = useAppStore((s) => s.importStep)
+  const rehydrating = useAppStore((s) => s.rehydrating)
   const resetImport = useAppStore((s) => s.resetImport)
   const fileCount = useAppStore((s) => s.fileMetadataList.length)
   const [dragActive, setDragActive] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [fileError, setFileError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleFiles = useCallback(
     async (fileList: FileList) => {
+      setFileError('')
       const csvFiles = Array.from(fileList).filter((f) => f.name.endsWith('.csv'))
       if (csvFiles.length === 0) {
-        alert('Bitte mindestens eine CSV-Datei auswählen.')
+        setFileError('Bitte mindestens eine CSV-Datei auswählen.')
         return
       }
-      await loadFiles(csvFiles)
+      setLoading(true)
+      try {
+        await loadFiles(csvFiles)
+      } finally {
+        setLoading(false)
+      }
     },
     [loadFiles]
   )
@@ -44,12 +53,16 @@ export function CsvImport() {
     [handleFiles]
   )
 
+  if (rehydrating) return null
+
   if (importStep !== 'idle') {
     return (
       <div className="px-6 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
         <span className="text-sm text-gray-600">
           {importStep === 'mapping'
             ? `Spalten-Mapping konfigurieren (${fileCount} ${fileCount === 1 ? 'Datei' : 'Dateien'})...`
+            : importStep === 'processing'
+            ? `Daten werden verarbeitet (${fileCount} ${fileCount === 1 ? 'Datei' : 'Dateien'})...`
             : `Daten geladen (${fileCount} ${fileCount === 1 ? 'Datei' : 'Dateien'})`}
         </span>
         <button
@@ -84,12 +97,29 @@ export function CsvImport() {
         <p className="text-sm text-gray-500 mb-4">
           Ziehe deine CSV-Dateien hierher oder klicke zum Auswählen
         </p>
-        <p className="text-xs text-gray-400 max-w-lg mx-auto leading-relaxed">
-          Die Exportdaten findest du im Online-Portal deines Herstellers
-          (SMA Sunny Portal, Fronius Solar.web, Huawei FusionSolar, SENEC, Kostal Solar Portal).
-          Exportiere die Messdaten als CSV-Datei — am besten für den gesamten Zeitraum des Schadens.
-          Du kannst auch mehrere Dateien gleichzeitig hochladen.
-        </p>
+        {loading ? (
+          <div className="flex items-center justify-center gap-2 mt-2">
+            <svg className="w-5 h-5 text-amber-500 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <span className="text-sm text-amber-700 font-medium">Dateien werden verarbeitet...</span>
+          </div>
+        ) : (
+          <p className="text-xs text-gray-400 max-w-lg mx-auto leading-relaxed">
+            Die Exportdaten findest du im Online-Portal deines Herstellers
+            (SMA Sunny Portal, Fronius Solar.web, Huawei FusionSolar, SENEC, Kostal Solar Portal).
+            Exportiere die Messdaten als CSV-Datei — am besten für den gesamten Zeitraum des Schadens.
+            Du kannst auch mehrere Dateien gleichzeitig hochladen.
+          </p>
+        )}
+
+        {fileError && (
+          <div className="mt-3 px-4 py-2 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm text-red-700">{fileError}</p>
+          </div>
+        )}
+
         <input
           ref={inputRef}
           type="file"
@@ -97,6 +127,7 @@ export function CsvImport() {
           multiple
           onChange={onFileSelect}
           className="hidden"
+          aria-label="CSV-Dateien auswählen"
         />
       </div>
     </div>

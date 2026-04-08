@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Line, Bar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
@@ -44,6 +44,14 @@ export function DayDetailModal() {
     () => simulationResults.findIndex((d) => d.date === selectedDay),
     [simulationResults, selectedDay]
   )
+
+  // Close on Escape key
+  useEffect(() => {
+    if (!selectedDay) return
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedDay(null) }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [selectedDay, setSelectedDay])
 
   if (!selectedDay || !dayData) return null
 
@@ -103,7 +111,13 @@ export function DayDetailModal() {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      onClick={(e) => { if (e.target === e.currentTarget) setSelectedDay(null) }}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Tagesdetail ${selectedDay}`}
+    >
       <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">

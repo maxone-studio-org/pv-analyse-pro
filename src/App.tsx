@@ -22,6 +22,7 @@ function App() {
   const importStep = useAppStore((s) => s.importStep)
   const rehydrating = useAppStore((s) => s.rehydrating)
   const rehydrate = useAppStore((s) => s.rehydrate)
+  const persistError = useAppStore((s) => s.persistError)
   const duplicateInfo = useAppStore((s) => s.duplicateInfo)
   const confirmDuplicate = useAppStore((s) => s.confirmDuplicate)
   const cancelDuplicate = useAppStore((s) => s.cancelDuplicate)
@@ -34,6 +35,21 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header onCredits={() => setCreditsOpen(true)} />
+
+      {/* Persist error banner */}
+      {persistError && (
+        <div className="px-6 py-2">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 flex items-center justify-between">
+            <p className="text-xs text-yellow-800">{persistError}</p>
+            <button
+              onClick={() => useAppStore.setState({ persistError: null })}
+              className="text-yellow-600 hover:text-yellow-800 text-xs font-medium ml-4"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Loading indicator for data restore */}
       {rehydrating && (
@@ -61,7 +77,7 @@ function App() {
           <ImportWarnings />
           <GapWarnings />
 
-          <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] gap-4">
             {/* Sidebar */}
             <div className="space-y-4">
               <SimulationConfig />

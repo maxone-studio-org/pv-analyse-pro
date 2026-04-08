@@ -25,6 +25,21 @@ export function ColumnMapping() {
   const setInputIsUTC = useAppStore((s) => s.setInputIsUTC)
   const [manualMode, setManualMode] = useState(false)
 
+  if (importStep === 'processing') {
+    return (
+      <div className="p-6">
+        <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
+          <svg className="w-8 h-8 mx-auto text-amber-500 animate-spin mb-3" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <p className="text-base font-medium text-gray-700">Daten werden verarbeitet...</p>
+          <p className="text-sm text-gray-500 mt-1">CSV-Dateien parsen, Zeitreihen sortieren, Simulation berechnen</p>
+        </div>
+      </div>
+    )
+  }
+
   if (importStep !== 'mapping') return null
 
   const validationErrors = importErrors.filter((e) => e.line === 0)

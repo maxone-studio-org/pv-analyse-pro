@@ -17,7 +17,22 @@ import { computeSHA256 } from '../utils/hash'
 import { detectDataGaps, deduplicateIntervals } from '../utils/gapDetection'
 import { saveState, loadState, clearState, type PersistedState } from './persist'
 
-export type ImportStep = 'idle' | 'mapping' | 'done'
+/** Yield to browser for a frame so UI can update (loading indicators, etc.) */
+const yieldToUI = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
+
+/** Merge multiple CSV texts: use header from first file, skip headers in rest */
+function mergeCSVTexts(texts: string[]): string {
+  if (texts.length === 1) return texts[0]
+  const lines0 = texts[0].split('\n')
+  const header = lines0[0]
+  const dataLines = [
+    ...lines0.slice(1),
+    ...texts.slice(1).flatMap((t) => t.split('\n').slice(1)),
+  ].filter((l) => l.trim().length > 0)
+  return [header, ...dataLines].join('\n')
+}
+
+export type ImportStep = 'idle' | 'mapping' | 'processing' | 'done'
 
 interface AppState {
   // CSV / Import
@@ -54,6 +69,7 @@ interface AppState {
   inputIsUTC: boolean
   showCredits: boolean
   rehydrating: boolean // true while restoring from IndexedDB
+  persistError: string | null
 
   // Actions
   rehydrate: () => Promise<void>
@@ -109,12 +125,14 @@ export const useAppStore = create<AppState>((set, get) => ({
   inputIsUTC: false,
   showCredits: false,
   rehydrating: false,
+  persistError: null,
 
   rehydrate: async () => {
     const persisted = await loadState()
     if (!persisted || persisted.csvTexts.length === 0) return
 
     set({ rehydrating: true })
+    await yieldToUI() // Let the loading indicator render
 
     // Restore config
     const fileMetadataList: FileMetadata[] = persisted.fileMetadataList.map((f) => ({
@@ -124,18 +142,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     // Merge CSV texts for preview
     const texts = persisted.csvTexts
-    let mergedText: string
-    if (texts.length === 1) {
-      mergedText = texts[0]
-    } else {
-      const lines0 = texts[0].split('\n')
-      const header = lines0[0]
-      const dataLines = [
-        ...lines0.slice(1),
-        ...texts.slice(1).flatMap((t) => t.split('\n').slice(1)),
-      ].filter((l) => l.trim().length > 0)
-      mergedText = [header, ...dataLines].join('\n')
-    }
+    const mergedText = mergeCSVTexts(texts)
     const { headers, preview } = parseCSVPreview(mergedText)
 
     set({
@@ -191,25 +198,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       })
     )
 
-    // Merge CSV texts: use header from first file, skip headers in subsequent files
     const texts = fileResults.map((r) => r.text)
-    let mergedText: string
-
-    if (texts.length === 1) {
-      mergedText = texts[0]
-    } else {
-      const lines0 = texts[0].split('\n')
-      const header = lines0[0]
-      const dataLines = [
-        ...lines0.slice(1),
-        ...texts.slice(1).flatMap((t) => {
-          const lines = t.split('\n')
-          return lines.slice(1) // skip header
-        }),
-      ].filter((line) => line.trim().length > 0)
-      mergedText = [header, ...dataLines].join('\n')
-    }
-
+    const mergedText = mergeCSVTexts(texts)
     const { headers, preview } = parseCSVPreview(mergedText)
     const mapping = autoDetectMapping(headers)
 
@@ -284,18 +274,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     if (mode === 'replace') {
       // Replace all — use pending files as the new dataset
       const texts = pendingFiles.texts
-      let mergedText: string
-      if (texts.length === 1) {
-        mergedText = texts[0]
-      } else {
-        const lines0 = texts[0].split('\n')
-        const header = lines0[0]
-        const dataLines = [
-          ...lines0.slice(1),
-          ...texts.slice(1).flatMap((t) => t.split('\n').slice(1)),
-        ].filter((l) => l.trim().length > 0)
-        mergedText = [header, ...dataLines].join('\n')
-      }
+      const mergedText = mergeCSVTexts(texts)
       const { headers, preview } = parseCSVPreview(mergedText)
       const mapping = autoDetectMapping(headers)
       set({
@@ -325,13 +304,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       // Merge with existing
       const allTexts = [...get().csvTexts, ...newTexts]
       const allMeta = [...get().fileMetadataList, ...newMeta]
-      const lines0 = allTexts[0].split('\n')
-      const header = lines0[0]
-      const dataLines = [
-        ...lines0.slice(1),
-        ...allTexts.slice(1).flatMap((t) => t.split('\n').slice(1)),
-      ].filter((l) => l.trim().length > 0)
-      const mergedText = [header, ...dataLines].join('\n')
+      const mergedText = mergeCSVTexts(allTexts)
       const { headers, preview } = parseCSVPreview(mergedText)
       const mapping = autoDetectMapping(headers)
 
@@ -361,7 +334,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }))
   },
 
-  confirmMapping: () => {
+  confirmMapping: async () => {
     const { csvTexts, columnMapping, inputIsUTC, simulationParams } = get()
     if (csvTexts.length === 0) return
 
@@ -370,6 +343,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ importErrors: errors.map((e) => ({ line: 0, message: e })) })
       return
     }
+
+    // Show processing state and yield so UI can update
+    set({ importStep: 'processing' })
+    await yieldToUI()
 
     // Parse each file separately to tag with sourceFileIndex
     const allRows: import('../types').RawDataRow[] = []
@@ -464,7 +441,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 }))
 
-/** Save current inputs to IndexedDB (async, fire-and-forget) */
+/** Save current inputs to IndexedDB (async, shows error on failure) */
 function persistCurrentState(s: AppState) {
   const persisted: PersistedState = {
     csvTexts: s.csvTexts,
@@ -478,5 +455,7 @@ function persistCurrentState(s: AppState) {
     costParams: s.costParams,
     costCapOverrides: s.costCapOverrides,
   }
-  saveState(persisted)
+  saveState(persisted).catch(() => {
+    useAppStore.setState({ persistError: 'Daten konnten nicht lokal gespeichert werden. Beim Neuladen gehen sie verloren.' })
+  })
 }
