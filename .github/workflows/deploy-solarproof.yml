@@ -1,0 +1,28 @@
+name: Deploy SolarProof to voltfair-cli
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t solarproof-app:latest .
+
+      - name: Deploy
+        run: |
+          mkdir -p /opt/solarproof
+          cp docker-compose.yml /opt/solarproof/docker-compose.yml
+          cp nginx.conf /opt/solarproof/nginx.conf
+          cd /opt/solarproof
+          docker compose up -d
+          docker image prune -f
+
+      - name: Health check
+        run: |
+          sleep 3
+          curl -sf http://localhost:$(docker port solarproof-app 80 | head -1 | cut -d: -f2)/ > /dev/null && echo "SolarProof is healthy" || echo "Health check failed"

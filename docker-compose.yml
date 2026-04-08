@@ -1,0 +1,28 @@
+services:
+  app:
+    image: solarproof-app:latest
+    build:
+      context: .
+    container_name: solarproof-app
+    restart: unless-stopped
+    mem_limit: 64m
+    expose:
+      - "80"
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.solarproof-https.rule=Host(`solarproof.voltfair.de`)"
+      - "traefik.http.routers.solarproof-https.entryPoints=https"
+      - "traefik.http.routers.solarproof-https.tls=true"
+      - "traefik.http.routers.solarproof-https.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.solarproof-http.rule=Host(`solarproof.voltfair.de`)"
+      - "traefik.http.routers.solarproof-http.entryPoints=http"
+      - "traefik.http.routers.solarproof-http.middlewares=solarproof-redirect@docker"
+      - "traefik.http.middlewares.solarproof-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.solarproof-redirect.redirectscheme.permanent=true"
+      - "traefik.http.services.solarproof.loadbalancer.server.port=80"
+
+networks:
+  proxy:
+    external: true
