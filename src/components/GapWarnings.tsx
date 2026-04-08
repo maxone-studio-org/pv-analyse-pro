@@ -1,10 +1,19 @@
+import { useState, useMemo } from 'react'
 import { useAppStore } from '../store'
+import type { DataGap } from '../types'
+
+const MONTH_NAMES = [
+  'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
+  'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember',
+]
 
 export function GapWarnings() {
   const dataGaps = useAppStore((s) => s.dataGaps)
   const overlapSummaries = useAppStore((s) => s.overlapSummaries)
   const fileMetadataList = useAppStore((s) => s.fileMetadataList)
   const importStep = useAppStore((s) => s.importStep)
+
+  const [expandedSection, setExpandedSection] = useState<'days' | 'intervals' | null>(null)
 
   if (importStep !== 'done') return null
 
@@ -41,13 +50,15 @@ export function GapWarnings() {
         </div>
       </div>
 
-      {/* Missing days */}
+      {/* Missing days — collapsible */}
       {missingDays.length > 0 && (
-        <div className="bg-red-50/50 border border-red-100 rounded-lg px-4 py-2.5">
-          <p className="text-xs font-semibold text-red-800 mb-1">
-            Fehlende Tage ({missingDays.length})
-          </p>
-          <ul className="text-xs text-red-700 space-y-0.5 max-h-28 overflow-y-auto">
+        <CollapsibleSection
+          title={`Fehlende Tage (${missingDays.length})`}
+          color="red"
+          expanded={expandedSection === 'days'}
+          onToggle={() => setExpandedSection(expandedSection === 'days' ? null : 'days')}
+        >
+          <ul className="text-xs text-red-700 space-y-0.5">
             {missingDays.map((g, i) => (
               <li key={i} className="flex items-center gap-1.5">
                 <span className="w-1 h-1 rounded-full bg-red-400 shrink-0" />
@@ -55,27 +66,19 @@ export function GapWarnings() {
               </li>
             ))}
           </ul>
-        </div>
+        </CollapsibleSection>
       )}
 
-      {/* Missing intervals */}
+      {/* Missing intervals — collapsible, grouped by month */}
       {missingIntervals.length > 0 && (
-        <div className="bg-orange-50 border border-orange-200 rounded-lg px-4 py-2.5">
-          <p className="text-xs font-semibold text-orange-800 mb-1">
-            Fehlende Intervalle ({missingIntervals.length})
-          </p>
-          <ul className="text-xs text-orange-700 space-y-0.5 max-h-28 overflow-y-auto">
-            {missingIntervals.slice(0, 20).map((g, i) => (
-              <li key={i} className="flex items-center gap-1.5">
-                <span className="w-1 h-1 rounded-full bg-orange-400 shrink-0" />
-                {g.message}
-              </li>
-            ))}
-            {missingIntervals.length > 20 && (
-              <li className="text-orange-500">... und {missingIntervals.length - 20} weitere</li>
-            )}
-          </ul>
-        </div>
+        <CollapsibleSection
+          title={`Fehlende Intervalle (${missingIntervals.length})`}
+          color="orange"
+          expanded={expandedSection === 'intervals'}
+          onToggle={() => setExpandedSection(expandedSection === 'intervals' ? null : 'intervals')}
+        >
+          <GroupedIntervalList gaps={missingIntervals} />
+        </CollapsibleSection>
       )}
 
       {/* Overlaps — per file pair with names and hashes */}
@@ -95,6 +98,93 @@ export function GapWarnings() {
   )
 }
 
+/** Collapsible section with toggle */
+function CollapsibleSection({
+  title,
+  color,
+  expanded,
+  onToggle,
+  children,
+}: {
+  title: string
+  color: 'red' | 'orange'
+  expanded: boolean
+  onToggle: () => void
+  children: React.ReactNode
+}) {
+  const colors = {
+    red: { bg: 'bg-red-50/50', border: 'border-red-100', text: 'text-red-800', chevron: 'text-red-400' },
+    orange: { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-800', chevron: 'text-orange-400' },
+  }
+  const c = colors[color]
+
+  return (
+    <div className={`${c.bg} border ${c.border} rounded-lg`}>
+      <button
+        onClick={onToggle}
+        className="w-full flex items-center justify-between px-4 py-2.5"
+      >
+        <p className={`text-xs font-semibold ${c.text}`}>{title}</p>
+        <svg
+          className={`w-3.5 h-3.5 ${c.chevron} transition-transform ${expanded ? 'rotate-180' : ''}`}
+          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {expanded && (
+        <div className="px-4 pb-3 max-h-64 overflow-y-auto">
+          {children}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Group gaps by YYYY-MM and display with month headers */
+function GroupedIntervalList({ gaps }: { gaps: DataGap[] }) {
+  const grouped = useMemo(() => {
+    const map = new Map<string, DataGap[]>()
+    for (const gap of gaps) {
+      // Extract date from message (dd.MM.yyyy format at start)
+      const match = gap.message.match(/^(\d{2})\.(\d{2})\.(\d{4})/)
+      const key = match ? `${match[3]}-${match[2]}` : 'unknown'
+      if (!map.has(key)) map.set(key, [])
+      map.get(key)!.push(gap)
+    }
+    return [...map.entries()].sort(([a], [b]) => a.localeCompare(b))
+  }, [gaps])
+
+  return (
+    <div className="space-y-2">
+      {grouped.map(([monthKey, monthGaps]) => {
+        const [year, month] = monthKey.split('-')
+        const monthName = MONTH_NAMES[parseInt(month) - 1] ?? month
+        const totalMinutes = monthGaps.reduce((s, g) => s + g.durationHours * 60, 0)
+
+        return (
+          <div key={monthKey}>
+            <p className="text-xs font-medium text-orange-700 mb-0.5">
+              {monthName} {year}
+              <span className="font-normal text-orange-500 ml-1">
+                — {monthGaps.length} Lücke{monthGaps.length !== 1 ? 'n' : ''}, {formatDuration(totalMinutes)}
+              </span>
+            </p>
+            <ul className="text-xs text-orange-700 space-y-0.5 ml-2">
+              {monthGaps.map((g, i) => (
+                <li key={i} className="flex items-center gap-1.5">
+                  <span className="w-1 h-1 rounded-full bg-orange-400 shrink-0" />
+                  {g.message}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function formatTotalHours(hours: number): string {
   if (hours < 1) return `${Math.round(hours * 60)} Minuten`
   if (hours < 24) return `${hours.toFixed(1)} Stunden`
@@ -102,4 +192,12 @@ function formatTotalHours(hours: number): string {
   const remaining = hours % 24
   if (remaining === 0) return `${days} Tag${days !== 1 ? 'e' : ''}`
   return `${days} Tag${days !== 1 ? 'e' : ''} ${remaining.toFixed(0)} Std.`
+}
+
+function formatDuration(minutes: number): string {
+  if (minutes < 60) return `${Math.round(minutes)} Min.`
+  const h = Math.floor(minutes / 60)
+  const m = Math.round(minutes % 60)
+  if (m === 0) return `${h} Std.`
+  return `${h} Std. ${m} Min.`
 }

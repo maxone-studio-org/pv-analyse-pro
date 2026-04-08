@@ -4,6 +4,24 @@ import type { DayData, DataGap, OverlapConflict, OverlapSummary } from '../types
 
 const TZ = 'Europe/Berlin'
 
+/** Get DST transition dates (last Sunday in March + October) for a set of years */
+function getDstTransitionDays(years: Set<number>): Set<string> {
+  const dstDays = new Set<string>()
+  for (const year of years) {
+    // Last Sunday in March (spring forward)
+    for (let d = 31; d >= 25; d--) {
+      const date = new Date(year, 2, d)
+      if (date.getDay() === 0) { dstDays.add(`${year}-${String(3).padStart(2, '0')}-${String(d).padStart(2, '0')}`); break }
+    }
+    // Last Sunday in October (fall back)
+    for (let d = 31; d >= 25; d--) {
+      const date = new Date(year, 9, d)
+      if (date.getDay() === 0) { dstDays.add(`${year}-${String(10).padStart(2, '0')}-${String(d).padStart(2, '0')}`); break }
+    }
+  }
+  return dstDays
+}
+
 /**
  * Detect gaps and overlaps in the merged dataset.
  *
@@ -40,8 +58,15 @@ export function detectDataGaps(days: DayData[]): DataGap[] {
   }
 
   // ── 2. Missing intervals within days ─────────────────
+  // Compute DST transition days to avoid false positives
+  const dataYears = new Set<number>()
+  for (const day of days) dataYears.add(parseInt(day.date.substring(0, 4)))
+  const dstDays = getDstTransitionDays(dataYears)
+
   for (const day of days) {
     if (day.intervals.length < 3) continue // too few to detect pattern
+
+    const isDstDay = dstDays.has(day.date)
 
     // Detect typical interval spacing (median of first gaps)
     const deltas: number[] = []
@@ -65,6 +90,14 @@ export function detectDataGaps(days: DayData[]): DataGap[] {
       )
 
       if (delta > typicalInterval * 2) {
+        // On DST transition days, skip gaps ≤ 65 minutes around the transition window (00:00–04:00 UTC)
+        // Fall-back: UTC timestamps jump ~1h when local clocks go back
+        // Spring-forward: local 02:00 skipped, can cause ~1h UTC gap
+        if (isDstDay && delta <= 65) {
+          const utcHour = day.intervals[i].timestamp.getUTCHours()
+          if (utcHour >= 0 && utcHour <= 4) continue
+        }
+
         const fromBerlin = toZonedTime(day.intervals[i].timestamp, TZ)
         const toBerlin = toZonedTime(day.intervals[i + 1].timestamp, TZ)
         const fromTime = format(fromBerlin, 'HH:mm')
