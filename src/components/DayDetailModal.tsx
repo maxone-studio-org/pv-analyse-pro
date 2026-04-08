@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { Line, Bar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
@@ -24,6 +24,11 @@ export function DayDetailModal() {
   const setSelectedDay = useAppStore((s) => s.setSelectedDay)
   const days = useAppStore((s) => s.days)
   const simulationResults = useAppStore((s) => s.simulationResults)
+  const simulationParams = useAppStore((s) => s.simulationParams)
+
+  const [showBeladung, setShowBeladung] = useState(false)
+  const [showEntladung, setShowEntladung] = useState(false)
+  const [showSocPct, setShowSocPct] = useState(true)
 
   const dayData = useMemo(
     () => days.find((d) => d.date === selectedDay),
@@ -35,6 +40,11 @@ export function DayDetailModal() {
     [simulationResults, selectedDay]
   )
 
+  const dayIndex = useMemo(
+    () => simulationResults.findIndex((d) => d.date === selectedDay),
+    [simulationResults, selectedDay]
+  )
+
   if (!selectedDay || !dayData) return null
 
   const formatDate = (dateStr: string) => {
@@ -42,12 +52,16 @@ export function DayDetailModal() {
     return `${d}.${m}.${y}`
   }
 
+  const isFirstDay = dayIndex === 0
+  const socStartPct = simData
+    ? (simData.soc_start_kwh / simulationParams.kapazitaet_kwh) * 100
+    : 0
+
   const labels = dayData.intervals.map((i) => {
     const berlin = toZonedTime(i.timestamp, TZ)
     return `${String(berlin.getHours()).padStart(2, '0')}:${String(berlin.getMinutes()).padStart(2, '0')}`
   })
 
-  // SoC chart data
   const socChartData = simData
     ? {
         labels,
@@ -65,7 +79,6 @@ export function DayDetailModal() {
       }
     : null
 
-  // Erzeugung vs Verbrauch chart
   const evChartData = {
     labels,
     datasets: [
@@ -94,9 +107,20 @@ export function DayDetailModal() {
       <div className="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">
-            Tagesdetail: {formatDate(selectedDay)}
-          </h2>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Tagesdetail: {formatDate(selectedDay)}
+            </h2>
+            {/* SoC Carry-Over hint */}
+            {simData && (
+              <p className="text-xs text-gray-500 mt-1">
+                {isFirstDay
+                  ? `Startladung: ${socStartPct.toFixed(0)}% (konfigurierter Anfangs-SoC)`
+                  : `Startladung: ${socStartPct.toFixed(0)}% (vom Vortag übernommen)`
+                }
+              </p>
+            )}
+          </div>
           <button
             onClick={() => setSelectedDay(null)}
             className="p-2 rounded-lg hover:bg-gray-100"
@@ -116,7 +140,6 @@ export function DayDetailModal() {
             <SummaryCard label="Netzbezug" value={dayData.totals.netzbezug_kwh} unit="kWh" color="orange" />
           </div>
 
-          {/* Simulation summary */}
           {simData && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <SummaryCard label="Sp. geladen" value={simData.totals.geladen_kwh} unit="kWh" color="amber" />
@@ -126,7 +149,7 @@ export function DayDetailModal() {
             </div>
           )}
 
-          {/* SoC Chart */}
+          {/* Charts */}
           {socChartData && (
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-2">SoC-Verlauf (simuliert)</h3>
@@ -136,7 +159,6 @@ export function DayDetailModal() {
             </div>
           )}
 
-          {/* Erzeugung vs Verbrauch */}
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-2">Erzeugung vs. Verbrauch</h3>
             <div className="h-64">
@@ -144,9 +166,18 @@ export function DayDetailModal() {
             </div>
           </div>
 
-          {/* Interval table */}
+          {/* Interval table with toggle columns */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-2">Messwerte</h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-semibold text-gray-700">Messwerte</h3>
+              {simData && (
+                <div className="flex gap-3 text-xs">
+                  <ToggleChip label="Speicher %" active={showSocPct} onToggle={() => setShowSocPct(!showSocPct)} />
+                  <ToggleChip label="Beladung" active={showBeladung} onToggle={() => setShowBeladung(!showBeladung)} />
+                  <ToggleChip label="Entladung" active={showEntladung} onToggle={() => setShowEntladung(!showEntladung)} />
+                </div>
+              )}
+            </div>
             <div className="overflow-x-auto max-h-64 overflow-y-auto">
               <table className="min-w-full text-xs">
                 <thead className="sticky top-0 bg-gray-50">
@@ -156,8 +187,14 @@ export function DayDetailModal() {
                     <th className="px-2 py-1.5 text-right font-medium text-gray-600">Verbrauch</th>
                     <th className="px-2 py-1.5 text-right font-medium text-gray-600">Einspeisung</th>
                     <th className="px-2 py-1.5 text-right font-medium text-gray-600">Netzbezug</th>
-                    {simData && (
-                      <th className="px-2 py-1.5 text-right font-medium text-gray-600">SoC</th>
+                    {simData && showSocPct && (
+                      <th className="px-2 py-1.5 text-right font-medium text-amber-600">Speicher %</th>
+                    )}
+                    {simData && showBeladung && (
+                      <th className="px-2 py-1.5 text-right font-medium text-green-600">Beladung</th>
+                    )}
+                    {simData && showEntladung && (
+                      <th className="px-2 py-1.5 text-right font-medium text-red-600">Entladung</th>
                     )}
                   </tr>
                 </thead>
@@ -165,6 +202,8 @@ export function DayDetailModal() {
                   {dayData.intervals.map((interval, i) => {
                     const berlin = toZonedTime(interval.timestamp, TZ)
                     const time = `${String(berlin.getHours()).padStart(2, '0')}:${String(berlin.getMinutes()).padStart(2, '0')}`
+                    const sim = simData?.intervals[i]
+                    const socPct = sim ? (sim.soc_kwh / simulationParams.kapazitaet_kwh) * 100 : 0
                     return (
                       <tr key={i} className="border-b border-gray-100">
                         <td className="px-2 py-1 font-mono">{time}</td>
@@ -172,14 +211,49 @@ export function DayDetailModal() {
                         <td className="px-2 py-1 text-right">{interval.verbrauch_kwh.toFixed(2)}</td>
                         <td className="px-2 py-1 text-right">{interval.einspeisung_kwh.toFixed(2)}</td>
                         <td className="px-2 py-1 text-right">{interval.netzbezug_kwh.toFixed(2)}</td>
-                        {simData && (
+                        {simData && showSocPct && (
                           <td className="px-2 py-1 text-right font-medium text-amber-600">
-                            {simData.intervals[i]?.soc_kwh.toFixed(2)}
+                            {socPct.toFixed(1)}%
+                          </td>
+                        )}
+                        {simData && showBeladung && (
+                          <td className="px-2 py-1 text-right text-green-600">
+                            {sim?.geladen_kwh.toFixed(3)}
+                          </td>
+                        )}
+                        {simData && showEntladung && (
+                          <td className="px-2 py-1 text-right text-red-600">
+                            {sim?.entladen_kwh.toFixed(3)}
                           </td>
                         )}
                       </tr>
                     )
                   })}
+                  {/* Day totals row */}
+                  {simData && (showBeladung || showEntladung || showSocPct) && (
+                    <tr className="border-t-2 border-gray-300 font-semibold bg-gray-50">
+                      <td className="px-2 py-1.5">Summe</td>
+                      <td className="px-2 py-1.5 text-right">{dayData.totals.erzeugung_kwh.toFixed(2)}</td>
+                      <td className="px-2 py-1.5 text-right">{dayData.totals.verbrauch_kwh.toFixed(2)}</td>
+                      <td className="px-2 py-1.5 text-right">{dayData.totals.einspeisung_kwh.toFixed(2)}</td>
+                      <td className="px-2 py-1.5 text-right">{dayData.totals.netzbezug_kwh.toFixed(2)}</td>
+                      {showSocPct && (
+                        <td className="px-2 py-1.5 text-right text-amber-600">
+                          {((simData.intervals.at(-1)?.soc_kwh ?? 0) / simulationParams.kapazitaet_kwh * 100).toFixed(1)}%
+                        </td>
+                      )}
+                      {showBeladung && (
+                        <td className="px-2 py-1.5 text-right text-green-600">
+                          {simData.totals.geladen_kwh.toFixed(3)}
+                        </td>
+                      )}
+                      {showEntladung && (
+                        <td className="px-2 py-1.5 text-right text-red-600">
+                          {simData.totals.entladen_kwh.toFixed(3)}
+                        </td>
+                      )}
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -187,6 +261,21 @@ export function DayDetailModal() {
         </div>
       </div>
     </div>
+  )
+}
+
+function ToggleChip({ label, active, onToggle }: { label: string; active: boolean; onToggle: () => void }) {
+  return (
+    <button
+      onClick={onToggle}
+      className={`px-2 py-0.5 rounded-full border text-xs transition-colors ${
+        active
+          ? 'bg-amber-100 border-amber-300 text-amber-800'
+          : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300'
+      }`}
+    >
+      {label}
+    </button>
   )
 }
 

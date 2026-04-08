@@ -11,15 +11,21 @@ import { DayDetailModal } from './components/DayDetailModal'
 import { ExportPanel } from './components/ExportPanel'
 import { LandingBanner } from './components/LandingBanner'
 import { LandingOverlay } from './components/LandingOverlay'
+import { DuplicateDialog } from './components/DuplicateDialog'
+import { CreditsOverlay } from './components/CreditsOverlay'
 import { useAppStore } from './store'
 
 function App() {
   const importStep = useAppStore((s) => s.importStep)
+  const duplicateInfo = useAppStore((s) => s.duplicateInfo)
+  const confirmDuplicate = useAppStore((s) => s.confirmDuplicate)
+  const cancelDuplicate = useAppStore((s) => s.cancelDuplicate)
   const [landingOpen, setLandingOpen] = useState(false)
+  const [creditsOpen, setCreditsOpen] = useState(false)
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header onCredits={() => setCreditsOpen(true)} />
 
       {/* Import area */}
       <CsvImport />
@@ -50,11 +56,23 @@ function App() {
         </div>
       )}
 
-      {/* Modal */}
+      {/* Modals / Overlays */}
       <DayDetailModal />
-
-      {/* Landing page overlay */}
       <LandingOverlay open={landingOpen} onClose={() => setLandingOpen(false)} />
+      <CreditsOverlay open={creditsOpen} onClose={() => setCreditsOpen(false)} />
+
+      {/* Duplicate detection dialog */}
+      {duplicateInfo && (
+        <DuplicateDialog
+          duplicateCount={duplicateInfo.duplicateCount}
+          totalCount={duplicateInfo.totalCount}
+          isFullDuplicate={duplicateInfo.isFullDuplicate}
+          fileName={duplicateInfo.fileName}
+          onImportNew={() => confirmDuplicate('new_only')}
+          onReplaceAll={() => confirmDuplicate('replace')}
+          onCancel={cancelDuplicate}
+        />
+      )}
     </div>
   )
 }

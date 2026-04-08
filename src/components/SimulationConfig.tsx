@@ -99,6 +99,9 @@ export function SimulationConfig() {
           </div>
         ))}
       </div>
+      <p className="text-xs text-gray-400 mt-3">
+        Die Simulation läuft über alle Tage — der Ladezustand wird von Tag zu Tag übernommen.
+      </p>
     </div>
   )
 }

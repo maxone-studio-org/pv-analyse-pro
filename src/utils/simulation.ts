@@ -14,6 +14,7 @@ export function runSimulation(
   const results: DaySimulation[] = []
 
   for (const day of days) {
+    const socAtDayStart = soc
     const simIntervals: SimulationInterval[] = []
     let dayGeladen = 0
     let dayEntladen = 0
@@ -66,6 +67,7 @@ export function runSimulation(
 
     results.push({
       date: day.date,
+      soc_start_kwh: socAtDayStart,
       intervals: simIntervals,
       totals: {
         geladen_kwh: dayGeladen,

@@ -38,13 +38,20 @@ interface AppState {
   simulationParams: SimulationParams
   simulationResults: DaySimulation[]
 
+  // Duplicate detection
+  pendingFiles: { texts: string[]; metadata: FileMetadata[] } | null
+  duplicateInfo: { duplicateCount: number; totalCount: number; isFullDuplicate: boolean; fileName: string } | null
+
   // UI
   selectedMonth: string | null // YYYY-MM
   selectedDay: string | null // YYYY-MM-DD
   inputIsUTC: boolean
+  showCredits: boolean
 
   // Actions
   loadFiles: (files: File[]) => Promise<void>
+  confirmDuplicate: (mode: 'new_only' | 'replace') => void
+  cancelDuplicate: () => void
   setMapping: (field: string, csvColumn: string) => void
   confirmMapping: () => void
   resetImport: () => void
@@ -76,9 +83,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     anfangs_soc_pct: 0,
   },
   simulationResults: [],
+  pendingFiles: null,
+  duplicateInfo: null,
   selectedMonth: null,
   selectedDay: null,
   inputIsUTC: false,
+  showCredits: false,
 
   loadFiles: async (files: File[]) => {
     // Process all files in parallel
@@ -122,6 +132,42 @@ export const useAppStore = create<AppState>((set, get) => ({
       importTimestamp: new Date(),
     }))
 
+    // Check for duplicates against existing data
+    const existingFiles = get().fileMetadataList
+    if (existingFiles.length > 0) {
+      // Compare SHA-256 hashes to detect full duplicates
+      const existingHashes = new Set(existingFiles.map((f) => f.sha256))
+      const newFile = metadataList[metadataList.length - 1]
+      const isFullDuplicate = metadataList.every((m) => existingHashes.has(m.sha256))
+
+      if (isFullDuplicate) {
+        set({
+          pendingFiles: { texts: fileResults.map((r) => r.text), metadata: metadataList },
+          duplicateInfo: {
+            duplicateCount: metadataList.reduce((s, m) => s + (existingHashes.has(m.sha256) ? 1 : 0), 0),
+            totalCount: metadataList.length,
+            isFullDuplicate: true,
+            fileName: newFile.name,
+          },
+        })
+        return
+      }
+
+      const hasSomeDuplicates = metadataList.some((m) => existingHashes.has(m.sha256))
+      if (hasSomeDuplicates) {
+        set({
+          pendingFiles: { texts: fileResults.map((r) => r.text), metadata: metadataList },
+          duplicateInfo: {
+            duplicateCount: metadataList.filter((m) => existingHashes.has(m.sha256)).length,
+            totalCount: metadataList.length,
+            isFullDuplicate: false,
+            fileName: metadataList.map((m) => m.name).join(', '),
+          },
+        })
+        return
+      }
+    }
+
     set({
       csvTexts: fileResults.map((r) => r.text),
       csvText: mergedText,
@@ -130,7 +176,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       columnMapping: mapping,
       importStep: 'mapping',
       fileMetadataList: metadataList,
-      // Reset previous data
+      pendingFiles: null,
+      duplicateInfo: null,
       days: [],
       importErrors: [],
       dstWarnings: [],
@@ -140,6 +187,84 @@ export const useAppStore = create<AppState>((set, get) => ({
       selectedMonth: null,
       selectedDay: null,
     })
+  },
+
+  confirmDuplicate: (mode) => {
+    const { pendingFiles } = get()
+    if (!pendingFiles) return
+
+    if (mode === 'replace') {
+      // Replace all — use pending files as the new dataset
+      const texts = pendingFiles.texts
+      let mergedText: string
+      if (texts.length === 1) {
+        mergedText = texts[0]
+      } else {
+        const lines0 = texts[0].split('\n')
+        const header = lines0[0]
+        const dataLines = [
+          ...lines0.slice(1),
+          ...texts.slice(1).flatMap((t) => t.split('\n').slice(1)),
+        ].filter((l) => l.trim().length > 0)
+        mergedText = [header, ...dataLines].join('\n')
+      }
+      const { headers, preview } = parseCSVPreview(mergedText)
+      const mapping = autoDetectMapping(headers)
+      set({
+        csvTexts: texts,
+        csvText: mergedText,
+        csvHeaders: headers,
+        csvPreview: preview,
+        columnMapping: mapping,
+        importStep: 'mapping',
+        fileMetadataList: pendingFiles.metadata,
+        pendingFiles: null,
+        duplicateInfo: null,
+        days: [], importErrors: [], dstWarnings: [], dataGaps: [], overlapSummaries: [],
+        simulationResults: [], selectedMonth: null, selectedDay: null,
+      })
+    } else {
+      // Import only new (non-duplicate) files
+      const existingHashes = new Set(get().fileMetadataList.map((f) => f.sha256))
+      const newTexts = pendingFiles.texts.filter((_, i) => !existingHashes.has(pendingFiles.metadata[i].sha256))
+      const newMeta = pendingFiles.metadata.filter((m) => !existingHashes.has(m.sha256))
+
+      if (newTexts.length === 0) {
+        set({ pendingFiles: null, duplicateInfo: null })
+        return
+      }
+
+      // Merge with existing
+      const allTexts = [...get().csvTexts, ...newTexts]
+      const allMeta = [...get().fileMetadataList, ...newMeta]
+      const lines0 = allTexts[0].split('\n')
+      const header = lines0[0]
+      const dataLines = [
+        ...lines0.slice(1),
+        ...allTexts.slice(1).flatMap((t) => t.split('\n').slice(1)),
+      ].filter((l) => l.trim().length > 0)
+      const mergedText = [header, ...dataLines].join('\n')
+      const { headers, preview } = parseCSVPreview(mergedText)
+      const mapping = autoDetectMapping(headers)
+
+      set({
+        csvTexts: allTexts,
+        csvText: mergedText,
+        csvHeaders: headers,
+        csvPreview: preview,
+        columnMapping: mapping,
+        importStep: 'mapping',
+        fileMetadataList: allMeta,
+        pendingFiles: null,
+        duplicateInfo: null,
+        days: [], importErrors: [], dstWarnings: [], dataGaps: [], overlapSummaries: [],
+        simulationResults: [], selectedMonth: null, selectedDay: null,
+      })
+    }
+  },
+
+  cancelDuplicate: () => {
+    set({ pendingFiles: null, duplicateInfo: null })
   },
 
   setMapping: (field, csvColumn) => {
@@ -209,6 +334,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       csvPreview: [],
       columnMapping: {},
       fileMetadataList: [],
+      pendingFiles: null,
+      duplicateInfo: null,
       days: [],
       importErrors: [],
       dstWarnings: [],

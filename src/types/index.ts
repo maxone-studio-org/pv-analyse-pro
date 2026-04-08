@@ -62,6 +62,7 @@ export interface SimulationInterval {
 /** Simulation result per day */
 export interface DaySimulation {
   date: string
+  soc_start_kwh: number // SoC at beginning of this day (carried from previous day)
   intervals: SimulationInterval[]
   totals: {
     geladen_kwh: number

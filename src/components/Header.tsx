@@ -1,6 +1,6 @@
 import { useAppStore } from '../store'
 
-export function Header() {
+export function Header({ onCredits }: { onCredits: () => void }) {
   const fileMetadataList = useAppStore((s) => s.fileMetadataList)
   const importStep = useAppStore((s) => s.importStep)
 
@@ -17,7 +17,12 @@ export function Header() {
         </div>
         <div>
           <h1 className="text-lg font-semibold text-gray-900">PV-Analyse-Pro</h1>
-          <p className="text-xs text-gray-500">v{__APP_VERSION__}</p>
+          <button
+            onClick={onCredits}
+            className="text-xs text-gray-400 hover:text-amber-500 transition-colors"
+          >
+            v{__APP_VERSION__} &middot; Credits
+          </button>
         </div>
       </div>
 
