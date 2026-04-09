@@ -86,6 +86,7 @@ export function VectorChat() {
       ])
     } finally {
       setLoading(false)
+      inputRef.current?.focus()
     }
   }, [input, loading, sessionId])
 
