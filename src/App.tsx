@@ -15,7 +15,6 @@ import { DuplicateDialog } from './components/DuplicateDialog'
 import { CreditsOverlay } from './components/CreditsOverlay'
 import { CostComparison } from './components/CostComparison'
 import { AllMonthsOverview } from './components/AllMonthsOverview'
-import { FeedbackButton } from './components/FeedbackButton'
 import { VectorChat } from './components/VectorChat'
 import { useAppStore } from './store'
 
@@ -101,9 +100,8 @@ function App() {
       <LandingOverlay open={landingOpen} onClose={() => setLandingOpen(false)} />
       <CreditsOverlay open={creditsOpen} onClose={() => setCreditsOpen(false)} />
 
-      {/* Chat & Feedback */}
+      {/* Chat & Feedback (integrated) */}
       <VectorChat />
-      <FeedbackButton />
 
       {/* Duplicate detection dialog */}
       {duplicateInfo && (
