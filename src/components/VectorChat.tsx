@@ -196,23 +196,23 @@ export function VectorChat() {
             </div>
 
             {/* Mode tabs */}
-            <div className="flex px-4 pb-2 gap-1">
+            <div className="flex px-4 pb-3 gap-2">
               <button
                 onClick={() => setMode('chat')}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
                   mode === 'chat'
-                    ? 'bg-white text-gray-800'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                    ? 'bg-amber-500 text-white shadow-md'
+                    : 'bg-white/20 text-white border border-white/30 hover:bg-white/30'
                 }`}
               >
                 Chat
               </button>
               <button
                 onClick={() => setMode('feedback')}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-all ${
                   mode === 'feedback'
-                    ? 'bg-white text-gray-800'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20'
+                    ? 'bg-amber-500 text-white shadow-md'
+                    : 'bg-white/20 text-white border border-white/30 hover:bg-white/30'
                 }`}
               >
                 Feedback
