@@ -163,14 +163,15 @@ export function VectorChat() {
 
   return (
     <>
-      {/* Chat toggle button — Vector avatar */}
+      {/* Chat toggle button — Vector avatar with label */}
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-40 hover:scale-110 transition-transform"
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white pl-4 pr-2 py-2 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 border border-white/10"
           aria-label="Chat mit Vector starten"
         >
-          <VectorAvatar size="lg" />
+          <span className="text-sm font-medium">Fragen? Chat mit Vector</span>
+          <VectorAvatar size="md" />
         </button>
       )}
 
