@@ -108,13 +108,13 @@ export function AllMonthsOverview() {
             <tr className="bg-gray-50 text-gray-600">
               <th className="px-2 py-2 text-left font-medium">Monat</th>
               <th className="px-2 py-2 text-right font-medium">Tage</th>
-              <th className="px-2 py-2 text-right font-medium">Erzeugung</th>
-              <th className="px-2 py-2 text-right font-medium">Verbrauch</th>
-              <th className="px-2 py-2 text-right font-medium">Netzbezug</th>
-              <th className="px-2 py-2 text-right font-medium">NB sim.</th>
-              <th className="px-2 py-2 text-right font-medium text-amber-700">Ersparnis</th>
-              <th className="px-2 py-2 text-right font-medium">Autarkie</th>
-              <th className="px-2 py-2 text-right font-medium">Aut. sim.</th>
+              <th className="px-2 py-2 text-right font-medium">Erzeugung<span className="text-gray-400 font-normal ml-0.5">kWh</span></th>
+              <th className="px-2 py-2 text-right font-medium">Verbrauch<span className="text-gray-400 font-normal ml-0.5">kWh</span></th>
+              <th className="px-2 py-2 text-right font-medium">Netzbezug<span className="text-gray-400 font-normal ml-0.5">kWh</span></th>
+              <th className="px-2 py-2 text-right font-medium">NB sim.<span className="text-gray-400 font-normal ml-0.5">kWh</span></th>
+              <th className="px-2 py-2 text-right font-medium text-amber-700">Ersparnis<span className="text-amber-400 font-normal ml-0.5">kWh</span></th>
+              <th className="px-2 py-2 text-right font-medium">Autarkie<span className="text-gray-400 font-normal ml-0.5">%</span></th>
+              <th className="px-2 py-2 text-right font-medium">Aut. sim.<span className="text-gray-400 font-normal ml-0.5">%</span></th>
             </tr>
           </thead>
           <tbody>

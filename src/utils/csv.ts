@@ -151,19 +151,59 @@ export function validateMapping(mapping: ColumnMapping): string[] {
   return errors
 }
 
-/** Normalize a numeric string: handle comma decimal separators */
+/** Normalize a numeric string: handle comma decimal separators and thousands dots */
 function parseNumber(value: string | undefined): number {
   if (!value) return NaN
-  // Replace comma decimal separator with dot (German format)
-  const normalized = value.trim().replace(',', '.')
-  return parseFloat(normalized)
+  let s = value.trim()
+  // German format: 1.234,56 → remove thousands dots, replace decimal comma
+  // If string has both dots and commas, dots are thousands separators
+  if (s.includes('.') && s.includes(',')) {
+    s = s.replace(/\./g, '').replace(',', '.')
+  } else {
+    // Only comma → decimal separator
+    s = s.replace(',', '.')
+  }
+  return parseFloat(s)
+}
+
+/**
+ * Detect if mapped columns use Wh instead of kWh based on column header text.
+ * Returns true if any energy column header contains "[Wh]" but NOT "[kWh]".
+ */
+export function detectWhUnit(mapping: ColumnMapping): boolean {
+  const energyFields = ['erzeugung_kwh', 'verbrauch_kwh', 'einspeisung_kwh', 'netzbezug_kwh']
+  for (const field of energyFields) {
+    const header = mapping[field]
+    if (!header) continue
+    const lower = header.toLowerCase()
+    // Match "[wh]" or "(wh)" but not "[kwh]" or "(kwh)"
+    if (/[\[(]wh[\])]/.test(lower) && !/[\[(]kwh[\])]/.test(lower)) {
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * After parsing, check if values are implausibly large (likely Wh not kWh).
+ * A residential PV system (≤30 kWp) at 15-min intervals can't exceed ~7.5 kWh per interval.
+ * If the median interval value > 50, values are almost certainly in Wh.
+ */
+export function detectImplausibleValues(rows: { erzeugung_kwh: number }[]): boolean {
+  if (rows.length < 10) return false
+  const values = rows.map(r => r.erzeugung_kwh).filter(v => v > 0).sort((a, b) => a - b)
+  if (values.length < 5) return false
+  const median = values[Math.floor(values.length / 2)]
+  return median > 50 // 50 kWh per interval is impossible for residential
 }
 
 /** Parse full CSV with confirmed mapping and return RawDataRow[] */
 export function parseCSVWithMapping(
   text: string,
-  mapping: ColumnMapping
+  mapping: ColumnMapping,
+  inputIsWh: boolean = false,
 ): { rows: RawDataRow[]; errors: { line: number; message: string }[] } {
+  const factor = inputIsWh ? 0.001 : 1 // Wh → kWh
   const result = Papa.parse<Record<string, string>>(text, {
     header: true,
     skipEmptyLines: true,
@@ -210,20 +250,20 @@ export function parseCSVWithMapping(
         continue
       }
 
-      const einspeisung = mapping.einspeisung_kwh
-        ? parseNumber(raw[mapping.einspeisung_kwh]) || null
+      const einspeisungRaw = mapping.einspeisung_kwh
+        ? parseNumber(raw[mapping.einspeisung_kwh])
         : null
-      const netzbezug = mapping.netzbezug_kwh
-        ? parseNumber(raw[mapping.netzbezug_kwh]) || null
+      const netzbezugRaw = mapping.netzbezug_kwh
+        ? parseNumber(raw[mapping.netzbezug_kwh])
         : null
 
       rows.push({
         datum: datumVal,
         uhrzeit: uhrzeitVal,
-        erzeugung_kwh: erzeugung,
-        verbrauch_kwh: verbrauch,
-        einspeisung_kwh: einspeisung,
-        netzbezug_kwh: netzbezug,
+        erzeugung_kwh: erzeugung * factor,
+        verbrauch_kwh: verbrauch * factor,
+        einspeisung_kwh: einspeisungRaw != null && !isNaN(einspeisungRaw) ? einspeisungRaw * factor : null,
+        netzbezug_kwh: netzbezugRaw != null && !isNaN(netzbezugRaw) ? netzbezugRaw * factor : null,
         sourceFileIndex: 0,
       })
     } catch {
@@ -255,4 +295,4 @@ function splitDateTime(combined: string): { datum: string; uhrzeit: string } {
   return { datum: combined, uhrzeit: '00:00' }
 }
 
-export { INTERNAL_FIELDS, REQUIRED_FIELDS }
+export { INTERNAL_FIELDS, REQUIRED_FIELDS, parseNumber }

@@ -1,10 +1,12 @@
 /** User-entered cost parameters */
 export interface CostParams {
   kreditrate_eur_monat: number
-  nachzahlung_eur_jahr: number
+  nachzahlung_eur_jahr: number // default/fallback for years without specific entry
+  nachzahlung_pro_jahr: Record<number, number> // year → EUR (overrides nachzahlung_eur_jahr)
   rueckerstattung_eur_jahr: number
   wartung_eur_jahr: number
-  cloud_eur_monat: number
+  cloud_eur_monat: number // default/fallback for months without specific entry
+  cloud_pro_monat: Record<string, number> // "YYYY-MM" → EUR (overrides cloud_eur_monat)
   einspeiseverguetung_ct_kwh: number
 }
 

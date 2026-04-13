@@ -10,7 +10,7 @@ import type {
   SimulationParams,
 } from '../types'
 import type { CostParams } from '../types/cost'
-import { autoDetectMapping, parseCSVPreview, parseCSVWithMapping, validateMapping } from '../utils/csv'
+import { autoDetectMapping, parseCSVPreview, parseCSVWithMapping, validateMapping, detectWhUnit, detectImplausibleValues } from '../utils/csv'
 import { processRawData } from '../utils/timezone'
 import { runSimulation } from '../utils/simulation'
 import { computeSHA256 } from '../utils/hash'
@@ -67,6 +67,8 @@ interface AppState {
   selectedMonth: string | null // YYYY-MM
   selectedDay: string | null // YYYY-MM-DD
   inputIsUTC: boolean
+  inputIsWh: boolean // true if CSV values are in Wh instead of kWh
+  whAutoDetected: boolean // true if Wh was auto-detected (for info display)
   showCredits: boolean
   rehydrating: boolean // true while restoring from IndexedDB
   persistError: string | null
@@ -77,6 +79,8 @@ interface AppState {
   confirmDuplicate: (mode: 'new_only' | 'replace') => void
   cancelDuplicate: () => void
   setCostParam: <K extends keyof CostParams>(key: K, value: CostParams[K]) => void
+  setCostNachzahlungYear: (year: number, value: number) => void
+  setCostCloudMonth: (month: string, value: number) => void
   setCostCapOverride: (year: number, active: boolean) => void
   setMapping: (field: string, csvColumn: string) => void
   confirmMapping: () => void
@@ -85,6 +89,7 @@ interface AppState {
   setSelectedMonth: (month: string) => void
   setSelectedDay: (day: string | null) => void
   setInputIsUTC: (isUTC: boolean) => void
+  setInputIsWh: (isWh: boolean) => void
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -112,9 +117,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   costParams: {
     kreditrate_eur_monat: 0,
     nachzahlung_eur_jahr: 0,
+    nachzahlung_pro_jahr: {},
     rueckerstattung_eur_jahr: 0,
     wartung_eur_jahr: 0,
     cloud_eur_monat: 0,
+    cloud_pro_monat: {},
     einspeiseverguetung_ct_kwh: 8.2,
   },
   costCapOverrides: {},
@@ -123,6 +130,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   selectedMonth: null,
   selectedDay: null,
   inputIsUTC: false,
+  inputIsWh: false,
+  whAutoDetected: false,
   showCredits: false,
   rehydrating: false,
   persistError: null,
@@ -153,16 +162,17 @@ export const useAppStore = create<AppState>((set, get) => ({
       columnMapping: persisted.columnMapping,
       fileMetadataList,
       inputIsUTC: persisted.inputIsUTC,
+      inputIsWh: persisted.inputIsWh ?? false,
       simulationParams: persisted.simulationParams,
       costParams: persisted.costParams,
       costCapOverrides: persisted.costCapOverrides,
     })
 
     // Re-process data (parse, deduplicate, simulate)
-    const { csvTexts, columnMapping, inputIsUTC, simulationParams } = get()
+    const { csvTexts, columnMapping, inputIsUTC, inputIsWh, simulationParams } = get()
     const allRows: import('../types').RawDataRow[] = []
     for (let fileIdx = 0; fileIdx < csvTexts.length; fileIdx++) {
-      const { rows } = parseCSVWithMapping(csvTexts[fileIdx], columnMapping)
+      const { rows } = parseCSVWithMapping(csvTexts[fileIdx], columnMapping, inputIsWh)
       for (const row of rows) row.sourceFileIndex = fileIdx
       allRows.push(...rows)
     }
@@ -246,6 +256,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
     }
 
+    // Auto-detect Wh from column headers
+    const whFromHeaders = detectWhUnit(mapping)
+    // Also do a quick parse to check value magnitude
+    const quickParse = parseCSVWithMapping(mergedText, mapping, false)
+    const whFromValues = detectImplausibleValues(quickParse.rows)
+    const isWh = whFromHeaders || whFromValues
+
     set({
       csvTexts: fileResults.map((r) => r.text),
       csvText: mergedText,
@@ -256,6 +273,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       fileMetadataList: metadataList,
       pendingFiles: null,
       duplicateInfo: null,
+      inputIsWh: isWh,
+      whAutoDetected: isWh,
       days: [],
       importErrors: [],
       dstWarnings: [],
@@ -335,7 +354,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   confirmMapping: async () => {
-    const { csvTexts, columnMapping, inputIsUTC, simulationParams } = get()
+    const { csvTexts, columnMapping, inputIsUTC, inputIsWh, simulationParams } = get()
     if (csvTexts.length === 0) return
 
     const errors = validateMapping(columnMapping)
@@ -353,7 +372,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const allParseErrors: { line: number; message: string }[] = []
 
     for (let fileIdx = 0; fileIdx < csvTexts.length; fileIdx++) {
-      const { rows, errors: parseErrors } = parseCSVWithMapping(csvTexts[fileIdx], columnMapping)
+      const { rows, errors: parseErrors } = parseCSVWithMapping(csvTexts[fileIdx], columnMapping, inputIsWh)
       for (const row of rows) {
         row.sourceFileIndex = fileIdx
       }
@@ -430,9 +449,28 @@ export const useAppStore = create<AppState>((set, get) => ({
   setSelectedMonth: (month) => set({ selectedMonth: month, selectedDay: null }),
   setSelectedDay: (day) => set({ selectedDay: day }),
   setInputIsUTC: (isUTC) => set({ inputIsUTC: isUTC }),
+  setInputIsWh: (isWh) => set({ inputIsWh: isWh }),
 
   setCostParam: (key, value) => {
     set((s) => ({ costParams: { ...s.costParams, [key]: value } }))
+    if (get().importStep === 'done') persistCurrentState(get())
+  },
+  setCostNachzahlungYear: (year, value) => {
+    set((s) => ({
+      costParams: {
+        ...s.costParams,
+        nachzahlung_pro_jahr: { ...s.costParams.nachzahlung_pro_jahr, [year]: value },
+      },
+    }))
+    if (get().importStep === 'done') persistCurrentState(get())
+  },
+  setCostCloudMonth: (month, value) => {
+    set((s) => ({
+      costParams: {
+        ...s.costParams,
+        cloud_pro_monat: { ...s.costParams.cloud_pro_monat, [month]: value },
+      },
+    }))
     if (get().importStep === 'done') persistCurrentState(get())
   },
   setCostCapOverride: (year, active) => {
@@ -451,6 +489,7 @@ function persistCurrentState(s: AppState) {
     })),
     columnMapping: s.columnMapping,
     inputIsUTC: s.inputIsUTC,
+    inputIsWh: s.inputIsWh,
     simulationParams: s.simulationParams,
     costParams: s.costParams,
     costCapOverrides: s.costCapOverrides,

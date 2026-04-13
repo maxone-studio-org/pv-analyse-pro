@@ -17,6 +17,7 @@ export interface PersistedState {
   fileMetadataList: Array<Omit<FileMetadata, 'importTimestamp'> & { importTimestamp: string }>
   columnMapping: ColumnMapping
   inputIsUTC: boolean
+  inputIsWh?: boolean
   simulationParams: SimulationParams
   costParams: CostParams
   costCapOverrides: Record<number, boolean>

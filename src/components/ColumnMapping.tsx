@@ -20,9 +20,12 @@ export function ColumnMapping() {
   const columnMapping = useAppStore((s) => s.columnMapping)
   const importErrors = useAppStore((s) => s.importErrors)
   const inputIsUTC = useAppStore((s) => s.inputIsUTC)
+  const inputIsWh = useAppStore((s) => s.inputIsWh)
+  const whAutoDetected = useAppStore((s) => s.whAutoDetected)
   const setMapping = useAppStore((s) => s.setMapping)
   const confirmMapping = useAppStore((s) => s.confirmMapping)
   const setInputIsUTC = useAppStore((s) => s.setInputIsUTC)
+  const setInputIsWh = useAppStore((s) => s.setInputIsWh)
   const [manualMode, setManualMode] = useState(false)
 
   if (importStep === 'processing') {
@@ -113,6 +116,25 @@ export function ColumnMapping() {
             >
               Falsch erkannt? Manuell anpassen &rarr;
             </button>
+
+            {/* Unit toggle (Wh vs kWh) */}
+            <div className={`flex items-center gap-3 mb-4 p-3 rounded-lg ${inputIsWh ? 'bg-amber-50 border border-amber-200' : 'bg-blue-50'}`}>
+              <input
+                type="checkbox"
+                id="wh-toggle"
+                checked={inputIsWh}
+                onChange={(e) => setInputIsWh(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              <label htmlFor="wh-toggle" className="text-sm text-gray-700">
+                Werte sind in Wh (Wattstunden)
+                <span className="block text-xs text-gray-500">
+                  {whAutoDetected
+                    ? 'Automatisch erkannt — Werte werden durch 1000 geteilt (Wh → kWh)'
+                    : 'Aktivieren wenn die Werte unrealistisch hoch erscheinen (z.B. >10.000 kWh/Monat)'}
+                </span>
+              </label>
+            </div>
 
             {/* Timezone toggle */}
             <div className="flex items-center gap-3 mb-4 p-3 bg-blue-50 rounded-lg">
@@ -219,6 +241,25 @@ export function ColumnMapping() {
                   </div>
                 )
               })}
+            </div>
+
+            {/* Unit toggle (Wh vs kWh) */}
+            <div className={`flex items-center gap-3 mb-6 p-3 rounded-lg ${inputIsWh ? 'bg-amber-50 border border-amber-200' : 'bg-blue-50'}`}>
+              <input
+                type="checkbox"
+                id="wh-toggle-manual"
+                checked={inputIsWh}
+                onChange={(e) => setInputIsWh(e.target.checked)}
+                className="rounded border-gray-300"
+              />
+              <label htmlFor="wh-toggle-manual" className="text-sm text-gray-700">
+                Werte sind in Wh (Wattstunden)
+                <span className="block text-xs text-gray-500">
+                  {whAutoDetected
+                    ? 'Automatisch erkannt — Werte werden durch 1000 geteilt (Wh → kWh)'
+                    : 'Aktivieren wenn die Werte unrealistisch hoch erscheinen'}
+                </span>
+              </label>
             </div>
 
             {/* Timezone toggle */}

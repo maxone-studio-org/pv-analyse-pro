@@ -54,10 +54,16 @@ export function calculateCostComparison(
 
     // Seite A: Gesamtkosten
     const kreditrate_eur = params.kreditrate_eur_monat * monthsInData
-    const nachzahlung_eur = params.nachzahlung_eur_jahr * anteil
+    // Per-year Nachzahlung: use specific value if available, otherwise fallback
+    const nachzahlung_eur = (params.nachzahlung_pro_jahr?.[year] ?? params.nachzahlung_eur_jahr) * anteil
     const rueckerstattung_eur = params.rueckerstattung_eur_jahr * anteil
     const wartung_eur = params.wartung_eur_jahr * anteil
-    const cloud_eur = params.cloud_eur_monat * monthsInData
+    // Per-month Cloudkosten: sum specific monthly values where available, fallback for others
+    const monthKeys = [...new Set(yearDays.map((d) => d.date.substring(0, 7)))]
+    let cloud_eur = 0
+    for (const mk of monthKeys) {
+      cloud_eur += params.cloud_pro_monat?.[mk] ?? params.cloud_eur_monat
+    }
     const einspeiseverguetung_eur = (einspeisung_kwh * params.einspeiseverguetung_ct_kwh) / 100
 
     const gesamtkosten_eur = kreditrate_eur + nachzahlung_eur + wartung_eur + cloud_eur - rueckerstattung_eur

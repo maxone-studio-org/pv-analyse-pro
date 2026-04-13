@@ -14,3 +14,57 @@ body {
 .animate-fade-in {
   animation: fade-in 0.25s ease-out;
 }
+
+/* Print styles: show only the modal content */
+@media print {
+  body > * {
+    visibility: hidden;
+  }
+  /* The modal overlay and its contents */
+  [role="dialog"] {
+    position: absolute !important;
+    inset: 0 !important;
+    visibility: visible !important;
+    background: white !important;
+    z-index: 9999 !important;
+  }
+  [role="dialog"] * {
+    visibility: visible !important;
+  }
+  [role="dialog"] > div {
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  /* Expand all scrollable areas */
+  .overflow-y-auto, .overflow-x-auto {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  /* Ensure charts print */
+  canvas {
+    max-width: 100% !important;
+  }
+  /* Add document header for court use */
+  [role="dialog"]::before {
+    content: "SolarProof — Tagesauswertung PV-Anlage";
+    display: block;
+    font-size: 10px;
+    color: #666;
+    text-align: center;
+    padding: 4px 0;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 8px;
+  }
+  [role="dialog"]::after {
+    content: "Erstellt mit SolarProof (solarproof.voltfair.de) — Datenquelle: CSV-Export Wechselrichter/Speicher";
+    display: block;
+    font-size: 8px;
+    color: #999;
+    text-align: center;
+    padding: 8px 0 4px;
+    border-top: 1px solid #ccc;
+    margin-top: 8px;
+  }
+}

@@ -135,14 +135,25 @@ export function DayDetailModal() {
               </p>
             )}
           </div>
-          <button
-            onClick={() => setSelectedDay(null)}
-            className="p-2 rounded-lg hover:bg-gray-100"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.print()}
+              className="p-2 rounded-lg hover:bg-gray-100 print:hidden"
+              title="Drucken / als PDF speichern"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setSelectedDay(null)}
+              className="p-2 rounded-lg hover:bg-gray-100 print:hidden"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <div className="p-6 space-y-6">
@@ -197,10 +208,10 @@ export function DayDetailModal() {
                 <thead className="sticky top-0 bg-gray-50">
                   <tr>
                     <th className="px-2 py-1.5 text-left font-medium text-gray-600">Zeit</th>
-                    <th className="px-2 py-1.5 text-right font-medium text-gray-600">Erzeugung</th>
-                    <th className="px-2 py-1.5 text-right font-medium text-gray-600">Verbrauch</th>
-                    <th className="px-2 py-1.5 text-right font-medium text-gray-600">Einspeisung</th>
-                    <th className="px-2 py-1.5 text-right font-medium text-gray-600">Netzbezug</th>
+                    <th className="px-2 py-1.5 text-right font-medium text-gray-600">Erzeugung <span className="text-gray-400 font-normal">kWh</span></th>
+                    <th className="px-2 py-1.5 text-right font-medium text-gray-600">Verbrauch <span className="text-gray-400 font-normal">kWh</span></th>
+                    <th className="px-2 py-1.5 text-right font-medium text-gray-600">Einspeisung <span className="text-gray-400 font-normal">kWh</span></th>
+                    <th className="px-2 py-1.5 text-right font-medium text-gray-600">Netzbezug <span className="text-gray-400 font-normal">kWh</span></th>
                     {simData && showSocPct && (
                       <th className="px-2 py-1.5 text-right font-medium text-amber-600">Speicher %</th>
                     )}
