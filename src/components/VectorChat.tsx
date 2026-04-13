@@ -177,7 +177,7 @@ export function VectorChat() {
 
       {/* Chat/Feedback window */}
       {open && (
-        <div className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden" style={{ height: '480px' }}>
+        <div className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden" style={{ minHeight: '280px', maxHeight: 'calc(100vh - 3rem)', height: messages.length > 2 ? 'calc(100vh - 3rem)' : '480px', transition: 'height 0.2s ease' }}>
           {/* Header */}
           <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white shrink-0">
             <div className="px-4 py-3 flex items-center justify-between">

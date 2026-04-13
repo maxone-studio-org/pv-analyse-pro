@@ -241,8 +241,21 @@ export function ExportPanel() {
       )}
 
       {errorMsg && (
-        <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-xs text-yellow-800">{errorMsg}</p>
+        <div className="mt-3 p-3 bg-red-50 border-2 border-red-300 rounded-lg">
+          <div className="flex items-start gap-2">
+            <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <div>
+              <p className="text-sm font-semibold text-red-800">Zeitstempel fehlt!</p>
+              <p className="text-xs text-red-700 mt-1">{errorMsg}</p>
+              <p className="text-xs text-red-600 mt-2 font-medium">
+                Ohne Zeitstempel hat das PDF eingeschränkte Beweiskraft vor Gericht.
+                Du kannst das PDF trotzdem herunterladen und den Zeitstempel später manuell
+                über <a href="https://freetsa.org/index_en.php" target="_blank" rel="noopener" className="underline">freetsa.org</a> anfordern.
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>
