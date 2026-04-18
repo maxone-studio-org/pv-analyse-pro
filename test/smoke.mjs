@@ -12,6 +12,7 @@ import process from 'node:process'
 const SITE = process.env.SITE || 'https://solarproof.voltfair.de'
 const VECTOR = process.env.VECTOR || 'https://agent.maxone.one'
 const SUPABASE = process.env.SUPABASE || 'https://panel.maxone.one'
+const TSA_PROXY = process.env.TSA_PROXY || `${SUPABASE}/functions/v1/tsa-proxy`
 const FEEDBACK_TABLE = 'solarproof_feedback'
 const TIMEOUT = 15000
 
@@ -166,6 +167,43 @@ async function testSupabaseFeedback() {
   }
 }
 
+// ─── 7. TSA-Proxy für Zeitstempel ───────────────────────────
+// Regression: 2026-04-18 — Beim Gesamtbericht-Export kam "Zeitstempel fehlt:
+// NetworkError". Ursache: alte TSA-Proxy-URL (yanjjiuucyagyytksuqz.supabase.co)
+// war nach .studio→.one Migration tot. Fix: panel.maxone.one/functions/v1/tsa-proxy.
+async function testTsaProxy() {
+  try {
+    // Minimaler TSQ (32 byte SHA-256 hash aller Nullen)
+    const zeroHash = new Uint8Array(32)
+    // Build TSQ inline (siehe src/utils/timestamp.ts buildTimestampRequest)
+    const sha256Oid = new Uint8Array([0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01])
+    const algNull = new Uint8Array([0x05, 0x00])
+    const algContent = new Uint8Array([...sha256Oid, ...algNull])
+    const algId = new Uint8Array([0x30, algContent.length, ...algContent])
+    const hashOctet = new Uint8Array([0x04, zeroHash.length, ...zeroHash])
+    const miContent = new Uint8Array([...algId, ...hashOctet])
+    const messageImprint = new Uint8Array([0x30, miContent.length, ...miContent])
+    const version = new Uint8Array([0x02, 0x01, 0x01])
+    const certReq = new Uint8Array([0x01, 0x01, 0xff])
+    const seqContent = new Uint8Array([...version, ...messageImprint, ...certReq])
+    const tsq = new Uint8Array([0x30, seqContent.length, ...seqContent])
+
+    const r = await fetchWithTimeout(TSA_PROXY, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/timestamp-query', 'Origin': SITE },
+      body: tsq,
+    })
+    if (r.status !== 200) return fail('tsa-proxy-reachable', `HTTP ${r.status}`)
+    const ct = r.headers.get('content-type') || ''
+    if (!ct.includes('timestamp-reply')) return fail('tsa-proxy-content-type', `erwartet timestamp-reply, bekommen "${ct}"`)
+    const body = await r.arrayBuffer()
+    if (body.byteLength < 100) return fail('tsa-proxy-body-size', `zu klein: ${body.byteLength} bytes`)
+    pass('tsa-proxy-reachable', `${body.byteLength} bytes TSR`)
+  } catch (e) {
+    fail('tsa-proxy-reachable', e.message)
+  }
+}
+
 // ─── Run + Report ───────────────────────────────────────────
 async function main() {
   console.log(`\n🔍 SolarProof Smoke-Test  |  ${new Date().toISOString()}\n`)
@@ -179,6 +217,7 @@ async function main() {
   await testChat()
   await testFeedbackIntent()
   await testSupabaseFeedback()
+  await testTsaProxy()
 
   const passed = results.filter((r) => r.ok && !r.skipped).length
   const failed = results.filter((r) => !r.ok).length

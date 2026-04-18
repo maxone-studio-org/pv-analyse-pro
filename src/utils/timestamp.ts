@@ -99,7 +99,7 @@ export async function requestTimestamp(pdfBuffer: ArrayBuffer): Promise<ArrayBuf
   const tsq = buildTimestampRequest(sha256Hex)
 
   // 3. Send via CORS-proxy (FreeTSA doesn't support CORS)
-  const TSA_PROXY = 'https://yanjjiuucyagyytksuqz.supabase.co/functions/v1/tsa-proxy'
+  const TSA_PROXY = 'https://panel.maxone.one/functions/v1/tsa-proxy'
 
   const response = await fetch(TSA_PROXY, {
     method: 'POST',
