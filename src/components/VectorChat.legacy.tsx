@@ -1,3 +1,18 @@
+/**
+ * @deprecated 2026-04-19 — ersetzt durch das zentrale Web-Component
+ * `<vector-chat>` aus agent.maxone.one/widget/vector-chat.js, eingebunden
+ * per `<script>`-Tag in `index.html`. Diese React-Portierung bleibt als
+ * Archiv stehen und wird nirgends mehr importiert.
+ *
+ * Single Source of Truth:
+ *   - Code: https://github.com/maxone-studio-org/vector-chat
+ *   - Widget: https://agent.maxone.one/widget/vector-chat.js
+ *
+ * Rollback: falls jemals noetig, diese Datei zurueck auf `VectorChat.tsx`
+ * umbenennen, in `App.tsx` importieren und `<script>`-Tag aus index.html
+ * entfernen. (Unwahrscheinlich — der Sinn der Extraktion ist genau, dass
+ * dieser Code obsolet ist.)
+ */
 import { useState, useRef, useEffect, useCallback } from 'react'
 
 const VECTOR_URL = 'https://agent.maxone.one/chat'
