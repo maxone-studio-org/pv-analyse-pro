@@ -5,7 +5,7 @@
  * Archiv stehen und wird nirgends mehr importiert.
  *
  * Single Source of Truth:
- *   - Code: https://github.com/maxone-studio-org/vector-chat
+ *   - Code: https://github.com/maxone-one/vector-chat
  *   - Widget: https://agent.maxone.one/widget/vector-chat.js
  *
  * Rollback: falls jemals noetig, diese Datei zurueck auf `VectorChat.tsx`
