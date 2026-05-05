@@ -1,6 +1,6 @@
 /**
- * CreditsOverlay — modal overlay sourced from Maxone's central credits API.
- * Studio/values/tech content is maintained in Maxone Admin, not in this repo,
+ * CreditsOverlay — modal overlay sourced from maxone's central credits API.
+ * Profile/values/tech content is maintained in maxone Admin, not in this repo,
  * so it can be updated without shipping a SolarProof release. Inline FALLBACK
  * keeps the overlay rendering if the API is slow or unreachable. The
  * Versionierung + Hinweise sections remain SolarProof-specific and live here.
@@ -51,20 +51,20 @@ const FALLBACK: Payload = {
     slug: 'solarproof',
     client_name: 'SolarProof',
     headline: 'Design & Entwicklung',
-    lead: 'SolarProof wurde von Maxone Studio gebaut — Konzept, Design und Software.',
+    lead: 'SolarProof wurde von maxone gebaut — Konzept, Design und Software.',
     body: [
-      'Maxone ist ein unabhängiges Studio für Markenidentität, redaktionelles Webdesign und individuelle Software — mit Sitz in Deutschland.',
+      'maxone ist ein unabhängiges Team für Markenidentität, redaktionelles Webdesign und individuelle Software — mit Sitz in Deutschland.',
     ],
     intro_extra: [],
-    cta_label: 'Zu Maxone Studio',
+    cta_label: 'Zu maxone',
     cta_href: 'https://maxone.one',
     show_values: true,
     show_tech_stack: true,
   },
   global: {
-    studio_name: 'Maxone Studio',
+    studio_name: 'maxone',
     studio_tagline:
-      'Ein unabhängiges Studio für Markenidentität, redaktionelles Webdesign und individuelle Software — mit Sitz in Deutschland.',
+      'Ein unabhängiges Team für Markenidentität, redaktionelles Webdesign und individuelle Software — mit Sitz in Deutschland.',
     studio_href: 'https://maxone.one',
     values_heading: 'Woran wir uns halten',
     values_items: [
@@ -229,13 +229,13 @@ export function CreditsOverlay({ open, onClose }: Props) {
           </section>
         )}
 
-        {/* Studio card */}
+        {/* Profile card */}
         <section className="mb-12 rounded-xl border-l-4 border-amber-500 bg-gray-50 p-6">
           <p className="text-xs font-medium uppercase tracking-[0.25em] text-gray-500 mb-2">
             Gebaut von
           </p>
           <p className="text-2xl font-bold text-gray-900 mb-2">
-            {global?.studio_name ?? 'Maxone Studio'}
+            {global?.studio_name ?? 'maxone'}
           </p>
           {global?.studio_tagline && (
             <p className="text-sm italic text-gray-600 leading-relaxed mb-4">
