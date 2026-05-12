@@ -54,11 +54,11 @@ export function LandingOverlay({ open, onClose }: Props) {
           <span className="text-xs font-medium text-amber-800">Open Source — kostenlos — kein Account</span>
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 tracking-tight">
-          SolarProof
+          Dein Speicher ist defekt.<br />Dein Recht nicht.
         </h1>
         <p className="mt-4 text-lg text-gray-600 max-w-xl mx-auto leading-relaxed">
-          Rechtssichere Dokumentation von PV-Einspeisedaten.
-          Wenn der Batteriespeicher ausfällt und der Nachweis vor Gericht zählt.
+          SolarProof begleitet dich von der Diagnose bis zum Anwaltsbriefing —
+          kostenlos, ohne Account, alles in deinem Browser.
         </p>
         <button
           onClick={handleClose}
@@ -139,26 +139,22 @@ export function LandingOverlay({ open, onClose }: Props) {
         </div>
       </section>
 
-      {/* ── So funktioniert's ── */}
+      {/* ── 5 Meilensteine ── */}
       <section className="bg-gray-50 py-16">
         <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-10 text-center">Drei Schritte</h2>
-          <div className="space-y-8">
-            <Step
-              number="1"
-              title="CSV hochladen"
-              description="Exportiere deine Messdaten aus dem Wechselrichter-Portal. Drag & Drop in die App. Die Spalten werden automatisch erkannt."
-            />
-            <Step
-              number="2"
-              title="Speicher simulieren"
-              description="Stelle die Parameter deines Speichers ein — Kapazität, Entladetiefe, Wirkungsgrade. Die Simulation läuft sofort."
-            />
-            <Step
-              number="3"
-              title="PDF + Zeitstempel exportieren"
-              description="Ein Klick erstellt das Gutachten-PDF mit SHA-256-Hash und RFC 3161 Zeitstempel. Bereit für den Anwalt."
-            />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Dein Weg in 5 Schritten</h2>
+          <p className="text-center text-gray-500 text-sm mb-10">Von der ersten Frage bis zum Anwaltsbriefing</p>
+          <div className="space-y-6">
+            <Step number="1" title="Diagnose & Kulanz-Check"
+              description="6 kurze Fragen klären deine Ansprüche. Das SENEC-Kulanz-Angebot wird nach OLG Hamm bewertet — mit klarer Ampel: annehmen oder ablehnen." />
+            <Step number="2" title="Daten exportieren"
+              description="Schritt-für-Schritt-Anleitung für das SENEC-Portal. Du weißt genau wo du klicken musst." />
+            <Step number="3" title="SolarProof Analyse"
+              description="CSV hochladen, Speicher simulieren, gerichtsverwertbares PDF mit SHA-256 und RFC 3161 Zeitstempel exportieren." />
+            <Step number="4" title="Anwalt finden"
+              description="Anwälte mit SENEC-Erfahrung in deiner Region. Kein bezahltes Ranking — nur Relevanz." />
+            <Step number="5" title="Anwalt briefen"
+              description="Automatisches Briefing-Paket: SolarProof-PDF, Fallzusammenfassung, Kulanz-Ergebnis, vorausgefüllte E-Mail." />
           </div>
         </div>
       </section>
@@ -184,6 +180,61 @@ export function LandingOverlay({ open, onClose }: Props) {
               description="App-Version und Git-Commit-Hash sind im PDF dokumentiert. Die Berechnung kann jederzeit exakt reproduziert werden."
             />
           </div>
+        </div>
+      </section>
+
+      {/* ── Rechtliche Grundlage ── */}
+      <section className="bg-gray-50 py-16">
+        <div className="max-w-3xl mx-auto px-6">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-1 h-6 bg-blue-600 rounded-full" />
+            <h2 className="text-2xl font-bold text-gray-900">Rechtliche Grundlage</h2>
+          </div>
+          <p className="text-sm text-gray-500 mb-8 ml-3">OLG Hamm, Az. 2 U 5/25 — Urteil vom 11. April 2025</p>
+
+          <blockquote className="bg-white border border-gray-200 rounded-2xl p-6 mb-6">
+            <p className="text-base text-gray-700 leading-relaxed italic border-l-4 border-blue-500 pl-4">
+              „Die Parteien haben insoweit eine Vereinbarung über die Beschaffenheit des
+              Batteriespeichers getroffen, als das Gerät unstreitig eine maximale
+              Speicherkapazität von 5 KWh aufweisen sollte. Diese Vorgaben erfüllt der
+              Batteriespeicher seit August 2023 infolge der durch die Streithelferin
+              veranlassten Drosselung auf nur noch 70% der vereinbarten Speicherkapazität
+              nicht."
+            </p>
+            <p className="mt-3 text-xs text-gray-400">Rn. 11 — BeckRS 2025, 14268</p>
+          </blockquote>
+
+          <p className="text-gray-600 leading-relaxed mb-4">
+            Das OLG Hamm hat entschieden: Schon eine Drosselung auf 70% der vereinbarten
+            Kapazität ist ein <strong>Sachmangel</strong>, der zum{' '}
+            <strong>Rücktritt berechtigt</strong>. Bei einem Totalausfall gilt das erst recht.
+            Fünf weitere Gerichte haben dies bestätigt.
+          </p>
+
+          <div className="space-y-2">
+            {[
+              { az: 'LG Darmstadt, 19 O 73/24', datum: '08.11.2024', text: 'Zahlenmäßige Unterschreitung = Mangel' },
+              { az: 'LG Ellwangen, 6 O 163/24',  datum: '',          text: 'Drosselung = Sachmangel' },
+              { az: 'LG Münster, 216 O 109/23',   datum: '',          text: 'Drosselung = Sachmangel' },
+              { az: 'LG Rostock',                  datum: '',          text: 'Drosselung = Sachmangel' },
+            ].map(({ az, datum, text }) => (
+              <div key={az} className="flex items-start gap-3 bg-white border border-gray-100 rounded-xl p-3.5">
+                <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg className="w-3 h-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-gray-700">{az}{datum && ` (${datum})`}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-6 text-sm font-medium text-gray-700">
+            Die Rechtslage ist klar. SolarProof liefert den Nachweis.
+          </p>
         </div>
       </section>
 
