@@ -8,7 +8,7 @@ import { calculateCostComparison, calculateStorageSavings, hasAnyCostInput } fro
 type ExportState = 'idle' | 'generating' | 'timestamping' | 'done' | 'error'
 type ReportType = 'month' | 'full'
 
-export function ExportPanel() {
+export function ExportPanel({ onPdfExported }: { onPdfExported?: () => void } = {}) {
   const days = useAppStore((s) => s.days)
   const simulationResults = useAppStore((s) => s.simulationResults)
   const simulationParams = useAppStore((s) => s.simulationParams)
@@ -104,6 +104,7 @@ export function ExportPanel() {
       }
 
       setExportState('done')
+      onPdfExported?.()
     } catch (err) {
       setExportState('error')
       setErrorMsg(err instanceof Error ? err.message : 'Unbekannter Fehler')

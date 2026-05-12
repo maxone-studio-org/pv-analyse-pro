@@ -1,72 +1,155 @@
+import { useState } from 'react'
+
 interface Props {
   onComplete: () => void
 }
 
 const SENEC_STEPS = [
-  { n: 1, text: 'mein-senec.de aufrufen und einloggen' },
-  { n: 2, text: 'Bereich „Auswertungen" öffnen' },
-  { n: 3, text: 'Zeitraum wählen — mindestens 12 Monate' },
-  { n: 4, text: 'Export als CSV auslösen' },
-  { n: 5, text: 'Datei speichern und hier hochladen' },
+  {
+    n: 1,
+    action: 'mein-senec.de aufrufen und einloggen',
+    detail: 'Nutzen Sie Ihre SENEC-Kundendaten. Bei Problemen: „Passwort vergessen" auf der Login-Seite.',
+  },
+  {
+    n: 2,
+    action: 'Bereich „Auswertungen" öffnen',
+    detail: 'Den Menüpunkt finden Sie links in der Navigation — manchmal auch unter „Statistiken".',
+  },
+  {
+    n: 3,
+    action: 'Zeitraum wählen — mindestens 12 Monate',
+    detail: 'Wählen Sie als Startdatum mindestens 12 Monate vor dem ersten Defekt. Je mehr Daten, desto besser.',
+  },
+  {
+    n: 4,
+    action: 'Export als CSV auslösen',
+    detail: 'Klicken Sie auf „Export" oder das Download-Symbol. Die Datei heißt üblicherweise SENEC_Export_YYYY-MM.csv.',
+  },
+  {
+    n: 5,
+    action: 'Datei speichern — im nächsten Schritt hochladen',
+    detail: 'Speichern Sie die Datei auf Ihrem Gerät. In Schritt 3 können Sie sie direkt hochladen.',
+  },
+]
+
+const PROBLEME = [
+  {
+    q: 'Ich komme nicht in mein SENEC-Konto.',
+    a: 'Nutzen Sie die „Passwort vergessen"-Funktion auf mein-senec.de. Falls das Konto nicht existiert: Registrieren Sie sich mit der E-Mail-Adresse aus Ihrem Kaufvertrag.',
+  },
+  {
+    q: 'Ich sehe keinen Export-Button.',
+    a: 'Bei älteren SENEC-Modellen (V2 und früher) ist der Export manchmal nur über den SENEC-Kundendienst erhältlich. Schreiben Sie an service@senec.com — der schriftliche Antrag ist selbst bereits ein Beweisstück.',
+  },
+  {
+    q: 'Die Datei ist leer oder enthält keine sinnvollen Daten.',
+    a: 'Das ist kein Fehler Ihrerseits — es ist ein weiteres Indiz. Eine leere oder fehlerhafte Exportdatei belegt, dass SENEC selbst keine verwertbaren Messdaten führt. Laden Sie die Datei trotzdem hoch.',
+  },
+  {
+    q: 'Ich habe mehrere CSV-Dateien (z.B. eine pro Monat).',
+    a: 'SolarProof kann mehrere Dateien gleichzeitig verarbeiten. Laden Sie alle hoch — das Tool erkennt Überschneidungen automatisch.',
+  },
 ]
 
 export function MeilensteinExport({ onComplete }: Props) {
+  const [openFaq, setOpenFaq] = useState<number | null>(null)
+
   return (
     <div className="min-h-[calc(100vh-112px)] flex flex-col">
-      <div className="flex-1 max-w-2xl mx-auto w-full px-5 py-8 space-y-6">
+      <div className="flex-1 max-w-2xl mx-auto w-full px-5 py-8 space-y-5">
 
         <div>
           <p className="text-sm font-semibold text-blue-600 mb-1">Schritt 2 von 5</p>
           <h1 className="text-2xl font-bold text-gray-900">Daten exportieren</h1>
           <p className="mt-2 text-base text-gray-600 leading-relaxed">
-            Laden Sie Ihre SENEC-Messdaten herunter. SolarProof erklärt jeden Klick
-            mit Screenshot-Anleitung.
+            Laden Sie Ihre SENEC-Messdaten herunter. Folgen Sie den 5 Schritten unten.
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold bg-blue-600 text-white px-2 py-0.5 rounded">SENEC</span>
-              <span className="text-sm font-semibold text-gray-700">mein-senec.de</span>
-            </div>
+        {/* Direct link to SENEC portal */}
+        <a
+          href="https://mein-senec.de"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-between bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white rounded-2xl px-5 py-4 transition-colors"
+        >
+          <div>
+            <p className="font-semibold text-base">SENEC-Portal öffnen</p>
+            <p className="text-sm text-blue-200 mt-0.5">mein-senec.de</p>
           </div>
-          <div className="p-5 space-y-3">
+          <svg className="w-6 h-6 text-blue-200 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+          </svg>
+        </a>
+
+        {/* Step-by-step guide */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-gray-100 flex items-center gap-2">
+            <span className="text-xs font-bold bg-blue-600 text-white px-2 py-0.5 rounded">SENEC</span>
+            <span className="text-sm font-semibold text-gray-700">Schritt-für-Schritt</span>
+          </div>
+          <div className="p-5 space-y-4">
             {SENEC_STEPS.map((s) => (
-              <div key={s.n} className="flex items-start gap-3">
-                <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div key={s.n} className="flex items-start gap-3.5">
+                <span className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
                   {s.n}
                 </span>
-                <span className="text-sm text-gray-700 leading-relaxed">{s.text}</span>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">{s.action}</p>
+                  <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{s.detail}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
+        {/* FAQ — Häufige Probleme */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-gray-100">
+            <h3 className="text-sm font-semibold text-gray-900">Häufige Probleme</h3>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {PROBLEME.map((p, i) => (
+              <div key={i}>
+                <button
+                  className="w-full text-left px-5 py-3.5 flex items-start justify-between gap-3"
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                >
+                  <span className="text-sm font-medium text-gray-800 leading-relaxed">{p.q}</span>
+                  <svg
+                    className={`w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5 transition-transform duration-200 ${openFaq === i ? 'rotate-180' : ''}`}
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {openFaq === i && (
+                  <div className="px-5 pb-4">
+                    <p className="text-sm text-gray-600 leading-relaxed">{p.a}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Other manufacturers */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-2">
           <h3 className="text-sm font-semibold text-gray-900">Andere Hersteller</h3>
           <div className="flex flex-wrap gap-2">
             {['SMA · Sunny Portal', 'Fronius · Solar.web', 'Huawei · FusionSolar', 'Kostal · Solar Portal'].map((h) => (
-              <span key={h} className="text-xs bg-gray-100 text-gray-500 px-3 py-1.5 rounded-lg">
-                {h}
-              </span>
+              <span key={h} className="text-xs bg-gray-100 text-gray-500 px-3 py-1.5 rounded-lg">{h}</span>
             ))}
           </div>
           <p className="text-xs text-gray-400">Anleitungen folgen in einer nächsten Version.</p>
         </div>
 
-        {/* Placeholder CTA */}
-        <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-5 text-center">
-          <p className="text-sm text-gray-500 mb-3">
-            Die Screenshot-Anleitung wird in Phase 3 gebaut.
-          </p>
-          <button
-            onClick={onComplete}
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-sm py-2.5 px-5 rounded-xl transition-colors"
-          >
-            Weiter zu Schritt 3 — Analyse →
-          </button>
-        </div>
+        <button
+          onClick={onComplete}
+          className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-base py-4 rounded-xl transition-colors"
+        >
+          Ich habe die Datei — weiter zu Schritt 3 →
+        </button>
 
       </div>
     </div>

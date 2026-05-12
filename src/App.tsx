@@ -100,7 +100,7 @@ function App() {
                 <div className="space-y-4">
                   <SimulationConfig />
                   <CostComparison />
-                  <ExportPanel />
+                  <ExportPanel onPdfExported={() => complete(3)} />
                 </div>
                 <div className="space-y-4">
                   <AllMonthsOverview />
