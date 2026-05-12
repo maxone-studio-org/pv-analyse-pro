@@ -269,14 +269,14 @@ Toggle pro Jahr: Preisdeckelung aktiv/inaktiv. 2022 und 2023 standardmäßig mit
 
 ## 10. Offene Entscheidungen (v1.2)
 
-| # | Frage | Priorität |
-|---|-------|-----------|
-| 1 | `einspeiseverguetung_eur` nicht in `gesamtkosten_eur` — beabsichtigt? | Hoch |
-| 2 | Jahr ohne BDEW-Preis (z.B. 2027+): Fehler oder überspringen? | Mittel |
-| 3 | `einspeisung > erzeugung` — hard error, warning oder clamp? | Mittel |
-| 4 | `kapazitaet_kwh = 0` — Verhalten definieren (Crash-Risiko) | Hoch |
-| 5 | Roberts 2024/2025-CSVs für Golden-Reference-Tests verfügbar? | Niedrig |
-| 6 | `VectorChat.tsx` (375 Zeilen, unused) — löschen? | Niedrig |
+| # | Frage | Priorität | Entscheidung |
+|---|-------|-----------|-------------|
+| 1 | `einspeiseverguetung_eur` nicht in `gesamtkosten_eur` — beabsichtigt? | Hoch | ✅ Beabsichtigt — `gesamtkosten_eur` zeigt Bruttokosten ohne Einspeisvergütungsabzug. Konservative Annahme zugunsten des Schadensanspruchs. |
+| 2 | Jahr ohne BDEW-Preis (z.B. 2027+): Fehler oder überspringen? | Mittel | Offen — aktuell stilles `continue`; bei Bedarf Warnung ergänzen |
+| 3 | `einspeisung > erzeugung` — hard error, warning oder clamp? | Mittel | Offen |
+| 4 | `kapazitaet_kwh = 0` — Verhalten definieren (Crash-Risiko) | Hoch | ✅ Gefixt — `runSimulation` gibt `[]` zurück; `DayDetailModal` nutzt `cap = kwh \|\| 1` |
+| 5 | Roberts 2024/2025-CSVs für Golden-Reference-Tests verfügbar? | Niedrig | Offen |
+| 6 | `VectorChat.tsx` (375 Zeilen, unused) — löschen? | Niedrig | ✅ Datei existiert nicht mehr |
 
 ---
 

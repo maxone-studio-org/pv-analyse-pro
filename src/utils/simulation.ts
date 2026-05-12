@@ -13,6 +13,8 @@ export function runSimulation(
   days: DayData[],
   params: SimulationParams
 ): DaySimulation[] {
+  if (!params.kapazitaet_kwh || params.kapazitaet_kwh <= 0) return []
+
   // Detect if netzbezug/einspeisung data is available
   const hasGridFlowData = days.some((d) =>
     d.intervals.some((i) => i.netzbezug_kwh > 0 || i.einspeisung_kwh > 0)

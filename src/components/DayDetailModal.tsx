@@ -61,9 +61,8 @@ export function DayDetailModal() {
   }
 
   const isFirstDay = dayIndex === 0
-  const socStartPct = simData
-    ? (simData.soc_start_kwh / simulationParams.kapazitaet_kwh) * 100
-    : 0
+  const cap = simulationParams.kapazitaet_kwh || 1
+  const socStartPct = simData ? (simData.soc_start_kwh / cap) * 100 : 0
 
   const labels = dayData.intervals.map((i) => {
     const berlin = toZonedTime(i.timestamp, TZ)
@@ -228,7 +227,7 @@ export function DayDetailModal() {
                     const berlin = toZonedTime(interval.timestamp, TZ)
                     const time = `${String(berlin.getHours()).padStart(2, '0')}:${String(berlin.getMinutes()).padStart(2, '0')}`
                     const sim = simData?.intervals[i]
-                    const socPct = sim ? (sim.soc_kwh / simulationParams.kapazitaet_kwh) * 100 : 0
+                    const socPct = sim ? (sim.soc_kwh / cap) * 100 : 0
                     return (
                       <tr key={i} className="border-b border-gray-100">
                         <td className="px-2 py-1 font-mono">{time}</td>
@@ -264,7 +263,7 @@ export function DayDetailModal() {
                       <td className="px-2 py-1.5 text-right">{dayData.totals.netzbezug_kwh.toFixed(2)}</td>
                       {showSocPct && (
                         <td className="px-2 py-1.5 text-right text-amber-600">
-                          {((simData.intervals.at(-1)?.soc_kwh ?? 0) / simulationParams.kapazitaet_kwh * 100).toFixed(1)}%
+                          {((simData.intervals.at(-1)?.soc_kwh ?? 0) / cap * 100).toFixed(1)}%
                         </td>
                       )}
                       {showBeladung && (
