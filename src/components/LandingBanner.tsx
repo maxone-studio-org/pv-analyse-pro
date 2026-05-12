@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-const STORAGE_KEY = 'pv-analyse-pro-landing-seen'
+const STORAGE_KEY = 'sp-landing-seen'
 
 export function LandingBanner({ onOpen }: { onOpen: () => void }) {
   const [dismissed] = useState(() => localStorage.getItem(STORAGE_KEY) === '1')

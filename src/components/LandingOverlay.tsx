@@ -1,6 +1,6 @@
 import { useEffect, useCallback, useState } from 'react'
 
-const STORAGE_KEY = 'pv-analyse-pro-landing-seen'
+const STORAGE_KEY = 'sp-landing-seen'
 
 interface Props {
   open: boolean
@@ -173,7 +173,7 @@ export function LandingOverlay({ open, onClose }: Props) {
           <p className="text-center text-gray-500 text-sm mb-10">Von der ersten Frage bis zum Anwaltsbriefing</p>
           <div className="space-y-6">
             <Step number="1" title="Diagnose & Kulanz-Check"
-              description="6 kurze Fragen klären deine Ansprüche. Das SENEC-Kulanz-Angebot wird nach OLG Hamm bewertet — mit klarer Ampel: annehmen oder ablehnen." />
+              description="Bis zu 8 kurze Fragen klären deine Ansprüche. Das SENEC-Kulanz-Angebot wird nach OLG Hamm bewertet — mit klarer Ampel: annehmen oder ablehnen." />
             <Step number="2" title="Daten exportieren"
               description="Schritt-für-Schritt-Anleitung für das SENEC-Portal. Du weißt genau wo du klicken musst." />
             <Step number="3" title="SolarProof Analyse"
