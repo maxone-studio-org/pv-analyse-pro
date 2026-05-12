@@ -5,6 +5,9 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { DuplicateDialog } from './components/DuplicateDialog'
 import { useMilestones } from './hooks/useMilestones'
 import { useAppStore } from './store'
+// Lokale Kopie — verhindert statischen Import von MeilensteinDiagnose (würde Lazy-Chunk brechen)
+const SP_DIAGNOSE_KEY = 'sp-diagnose-result'
+interface DiagnoseSnapshot { modell?: string; defektArt?: string; ampel?: string }
 
 // ── Lazy chunks ──────────────────────────────────────────────────────────────
 // Milestone-Schritte und schwere Overlays landen nicht im Initial-Bundle.
@@ -44,6 +47,44 @@ function App() {
   const { current, completed, goTo, complete } = useMilestones()
 
   useEffect(() => { rehydrate() }, [rehydrate])
+
+  // ── Vector Widget: kontextsensitives Greeting pro Meilenstein ────────────
+  useEffect(() => {
+    const el = document.querySelector('vector-chat')
+    if (!el) return
+
+    let result: DiagnoseSnapshot | null = null
+    try {
+      const raw = localStorage.getItem(SP_DIAGNOSE_KEY)
+      result = raw ? (JSON.parse(raw) as DiagnoseSnapshot) : null
+    } catch {}
+
+    const DEFEKT: Record<string, string> = {
+      totalausfall: 'Totalausfall',
+      drosselung:   'Drosselung auf 70%',
+      teilausfall:  'Teilausfall',
+      sonstiges:    'sonstiger Defekt',
+    }
+    const AMPEL: Record<string, string> = {
+      gruen: '🟢 Angebot annehmen',
+      gelb:  '🟡 Anwalt prüfen',
+      rot:   '🔴 Angebot ablehnen',
+    }
+
+    const diagnoseHinweis = result
+      ? ` Deine Diagnose: ${result.modell || 'SENEC'}, ${(result.defektArt ? DEFEKT[result.defektArt] : undefined) ?? result.defektArt ?? ''}${result.ampel ? ` — Ampel: ${AMPEL[result.ampel]}` : ''}.`
+      : ''
+
+    const greetings: Record<number, string> = {
+      1: `Ich begleite dich durch die Diagnose.${diagnoseHinweis} Fragen zur Kulanz-Prüfung oder zu deinen Ansprüchen?`,
+      2: 'Du bist beim Daten-Export. Ich helfe dir, die CSV aus dem SENEC-Portal zu bekommen — oder kläre, was zu tun ist wenn kein Export-Button sichtbar ist.',
+      3: `Du bist bei der Analyse.${diagnoseHinweis} Frag mich zu CSV-Import, Simulation oder PDF-Export.`,
+      4: `Nachweis erstellt.${diagnoseHinweis} Ich helfe dir, den richtigen Anwalt mit SENEC-Erfahrung zu finden.`,
+      5: `Briefing-Paket wird zusammengestellt.${diagnoseHinweis} Fragen zur E-Mail-Vorlage oder zum nächsten Schritt?`,
+    }
+
+    el.setAttribute('greeting', greetings[current] ?? greetings[3])
+  }, [current])
 
   return (
     <div className="min-h-screen bg-gray-50">
