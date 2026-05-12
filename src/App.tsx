@@ -15,6 +15,7 @@ import { LandingOverlay } from './components/LandingOverlay'
 import { DuplicateDialog } from './components/DuplicateDialog'
 import { CreditsOverlay } from './components/CreditsOverlay'
 import { ImpressumOverlay } from './components/ImpressumOverlay'
+import { DatenschutzOverlay } from './components/DatenschutzOverlay'
 import { CostComparison } from './components/CostComparison'
 import { AllMonthsOverview } from './components/AllMonthsOverview'
 import { DataIntegrityPanel } from './components/DataIntegrityPanel'
@@ -36,6 +37,7 @@ function App() {
   const [landingOpen, setLandingOpen] = useState(false)
   const [creditsOpen, setCreditsOpen] = useState(false)
   const [impressumOpen, setImpressumOpen] = useState(false)
+  const [datenschutzOpen, setDatenschutzOpen] = useState(false)
 
   const { current, completed, goTo, complete } = useMilestones()
 
@@ -44,7 +46,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onCredits={() => setCreditsOpen(true)} onImpressum={() => setImpressumOpen(true)} />
+      <Header onCredits={() => setCreditsOpen(true)} onImpressum={() => setImpressumOpen(true)} onDatenschutz={() => setDatenschutzOpen(true)} />
       <Prozessleiste current={current} completed={completed} onGoTo={goTo} />
 
       {/* Milestone 1 — Diagnose */}
@@ -126,6 +128,7 @@ function App() {
       <LandingOverlay open={landingOpen} onClose={() => setLandingOpen(false)} />
       <CreditsOverlay open={creditsOpen} onClose={() => setCreditsOpen(false)} />
       <ImpressumOverlay open={impressumOpen} onClose={() => setImpressumOpen(false)} />
+      <DatenschutzOverlay open={datenschutzOpen} onClose={() => setDatenschutzOpen(false)} />
 
       {duplicateInfo && (
         <DuplicateDialog

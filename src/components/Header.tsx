@@ -1,6 +1,6 @@
 import { useAppStore } from '../store'
 
-export function Header({ onCredits, onImpressum }: { onCredits: () => void; onImpressum: () => void }) {
+export function Header({ onCredits, onImpressum, onDatenschutz }: { onCredits: () => void; onImpressum: () => void; onDatenschutz: () => void }) {
   const fileMetadataList = useAppStore((s) => s.fileMetadataList)
   const importStep = useAppStore((s) => s.importStep)
 
@@ -22,6 +22,8 @@ export function Header({ onCredits, onImpressum }: { onCredits: () => void; onIm
             <button onClick={onCredits} className="hover:text-amber-500 transition-colors">Credits</button>
             {' '}&middot;{' '}
             <button onClick={onImpressum} className="hover:text-amber-500 transition-colors">Impressum</button>
+            {' '}&middot;{' '}
+            <button onClick={onDatenschutz} className="hover:text-amber-500 transition-colors">Datenschutz</button>
           </span>
         </div>
       </div>
