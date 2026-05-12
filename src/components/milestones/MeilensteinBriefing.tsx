@@ -184,7 +184,7 @@ export function MeilensteinBriefing({ onBack, onComplete }: Props) {
               <span className="text-gray-500">Modell</span>
               <span className="font-medium text-gray-800">{result.modell || '—'}</span>
               <span className="text-gray-500">Defekt</span>
-              <span className="font-medium text-gray-800">{DEFEKT_LABELS[result.defektArt] ?? result.defektArt || '—'}</span>
+              <span className="font-medium text-gray-800">{(DEFEKT_LABELS[result.defektArt] ?? result.defektArt) || '—'}</span>
               {result.kulanzangebot === 'ja' && result.ampel && (
                 <>
                   <span className="text-gray-500">Kulanz-Check</span>

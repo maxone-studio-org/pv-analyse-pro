@@ -1,134 +1,84 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { Header } from './components/Header'
 import { Prozessleiste } from './components/Prozessleiste'
-import { CsvImport } from './components/CsvImport'
-import { ColumnMapping } from './components/ColumnMapping'
-import { ImportWarnings } from './components/ImportWarnings'
-import { GapWarnings } from './components/GapWarnings'
-import { SimulationConfig } from './components/SimulationConfig'
-import { Calendar } from './components/Calendar'
-import { MonthSummary } from './components/MonthSummary'
-import { DayDetailModal } from './components/DayDetailModal'
-import { ExportPanel } from './components/ExportPanel'
-import { LandingBanner } from './components/LandingBanner'
-import { LandingOverlay } from './components/LandingOverlay'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { DuplicateDialog } from './components/DuplicateDialog'
-import { CreditsOverlay } from './components/CreditsOverlay'
-import { ImpressumOverlay } from './components/ImpressumOverlay'
-import { DatenschutzOverlay } from './components/DatenschutzOverlay'
-import { CostComparison } from './components/CostComparison'
-import { AllMonthsOverview } from './components/AllMonthsOverview'
-import { DataIntegrityPanel } from './components/DataIntegrityPanel'
-import { MeilensteinDiagnose } from './components/milestones/MeilensteinDiagnose'
-import { MeilensteinExport } from './components/milestones/MeilensteinExport'
-import { MeilensteinAnwalt } from './components/milestones/MeilensteinAnwalt'
-import { MeilensteinBriefing } from './components/milestones/MeilensteinBriefing'
 import { useMilestones } from './hooks/useMilestones'
 import { useAppStore } from './store'
 
+// ── Lazy chunks ──────────────────────────────────────────────────────────────
+// Milestone-Schritte und schwere Overlays landen nicht im Initial-Bundle.
+// M3Analyse kapselt jsPDF + chart.js — größter Spareffekt.
+
+const MeilensteinDiagnose  = lazy(() => import('./components/milestones/MeilensteinDiagnose').then(m => ({ default: m.MeilensteinDiagnose })))
+const MeilensteinExport    = lazy(() => import('./components/milestones/MeilensteinExport').then(m => ({ default: m.MeilensteinExport })))
+const MeilensteinAnwalt    = lazy(() => import('./components/milestones/MeilensteinAnwalt').then(m => ({ default: m.MeilensteinAnwalt })))
+const MeilensteinBriefing  = lazy(() => import('./components/milestones/MeilensteinBriefing').then(m => ({ default: m.MeilensteinBriefing })))
+const M3Analyse            = lazy(() => import('./components/M3Analyse').then(m => ({ default: m.M3Analyse })))
+const LandingOverlay       = lazy(() => import('./components/LandingOverlay').then(m => ({ default: m.LandingOverlay })))
+const CreditsOverlay       = lazy(() => import('./components/CreditsOverlay').then(m => ({ default: m.CreditsOverlay })))
+const ImpressumOverlay     = lazy(() => import('./components/ImpressumOverlay').then(m => ({ default: m.ImpressumOverlay })))
+const DatenschutzOverlay   = lazy(() => import('./components/DatenschutzOverlay').then(m => ({ default: m.DatenschutzOverlay })))
+
+function MilestoneSpinner() {
+  return (
+    <div className="min-h-[calc(100vh-112px)] flex items-center justify-center">
+      <div className="w-6 h-6 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+    </div>
+  )
+}
+
+// ── App ──────────────────────────────────────────────────────────────────────
+
 function App() {
-  const importStep = useAppStore((s) => s.importStep)
-  const rehydrating = useAppStore((s) => s.rehydrating)
-  const rehydrate = useAppStore((s) => s.rehydrate)
-  const persistError = useAppStore((s) => s.persistError)
-  const duplicateInfo = useAppStore((s) => s.duplicateInfo)
+  const rehydrate        = useAppStore((s) => s.rehydrate)
+  const duplicateInfo    = useAppStore((s) => s.duplicateInfo)
   const confirmDuplicate = useAppStore((s) => s.confirmDuplicate)
-  const cancelDuplicate = useAppStore((s) => s.cancelDuplicate)
-  const [landingOpen, setLandingOpen] = useState(false)
-  const [creditsOpen, setCreditsOpen] = useState(false)
-  const [impressumOpen, setImpressumOpen] = useState(false)
+  const cancelDuplicate  = useAppStore((s) => s.cancelDuplicate)
+
+  const [landingOpen,     setLandingOpen]     = useState(false)
+  const [creditsOpen,     setCreditsOpen]     = useState(false)
+  const [impressumOpen,   setImpressumOpen]   = useState(false)
   const [datenschutzOpen, setDatenschutzOpen] = useState(false)
 
   const { current, completed, goTo, complete } = useMilestones()
 
-  // Restore data from IndexedDB on first load
   useEffect(() => { rehydrate() }, [rehydrate])
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onCredits={() => setCreditsOpen(true)} onImpressum={() => setImpressumOpen(true)} onDatenschutz={() => setDatenschutzOpen(true)} />
+      <Header
+        onCredits={() => setCreditsOpen(true)}
+        onImpressum={() => setImpressumOpen(true)}
+        onDatenschutz={() => setDatenschutzOpen(true)}
+      />
       <Prozessleiste current={current} completed={completed} onGoTo={goTo} />
 
-      {/* Milestone 1 — Diagnose */}
-      {current === 1 && <MeilensteinDiagnose onComplete={() => complete(1)} />}
-
-      {/* Milestone 2 — Datenexport */}
-      {current === 2 && <MeilensteinExport onComplete={() => complete(2)} />}
-
-      {/* Milestone 3 — SolarProof Analyse (bestehende App) */}
-      {current === 3 && (
-        <>
-          {/* Persist error banner */}
-          {persistError && (
-            <div className="px-6 py-2">
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 flex items-center justify-between">
-                <p className="text-xs text-yellow-800">{persistError}</p>
-                <button
-                  onClick={() => useAppStore.setState({ persistError: null })}
-                  className="text-yellow-600 hover:text-yellow-800 text-xs font-medium ml-4"
-                >
-                  OK
-                </button>
-              </div>
-            </div>
+      {/* ── Milestone-Inhalt ─────────────────────────────────────────────── */}
+      <ErrorBoundary>
+        <Suspense fallback={<MilestoneSpinner />}>
+          {current === 1 && <MeilensteinDiagnose onComplete={() => complete(1)} />}
+          {current === 2 && <MeilensteinExport   onComplete={() => complete(2)} />}
+          {current === 3 && (
+            <M3Analyse
+              onLandingOpen={() => setLandingOpen(true)}
+              onPdfExported={() => complete(3)}
+            />
           )}
+          {current === 4 && <MeilensteinAnwalt  onBack={() => goTo(3)} />}
+          {current === 5 && <MeilensteinBriefing onBack={() => goTo(4)} onComplete={() => complete(5)} />}
+        </Suspense>
+      </ErrorBoundary>
 
-          {/* Loading indicator for data restore */}
-          {rehydrating && (
-            <div className="px-6 py-8 text-center">
-              <div className="inline-flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg px-6 py-3">
-                <svg className="w-5 h-5 text-amber-500 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                <span className="text-sm text-amber-800 font-medium">Gespeicherte Daten werden geladen...</span>
-              </div>
-            </div>
-          )}
-
-          {/* Import area */}
-          <CsvImport />
-          {importStep === 'idle' && (
-            <LandingBanner onOpen={() => setLandingOpen(true)} />
-          )}
-          <ColumnMapping />
-
-          {/* Analysis results */}
-          {importStep === 'done' && (
-            <div className="px-6 py-4 space-y-4">
-              <ImportWarnings />
-              <GapWarnings />
-              <DataIntegrityPanel />
-
-              <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] gap-4">
-                <div className="space-y-4">
-                  <SimulationConfig />
-                  <CostComparison />
-                  <ExportPanel onPdfExported={() => complete(3)} />
-                </div>
-                <div className="space-y-4">
-                  <AllMonthsOverview />
-                  <Calendar />
-                  <MonthSummary />
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Milestone 4 — Anwalt finden (gesperrt) */}
-      {current === 4 && <MeilensteinAnwalt onBack={() => goTo(3)} />}
-
-      {/* Milestone 5 — Briefing */}
-      {current === 5 && <MeilensteinBriefing onBack={() => goTo(4)} onComplete={() => complete(5)} />}
-
-      {/* Modals — immer im DOM, eigene Sichtbarkeitslogik */}
-      <DayDetailModal />
-      <LandingOverlay open={landingOpen} onClose={() => setLandingOpen(false)} />
-      <CreditsOverlay open={creditsOpen} onClose={() => setCreditsOpen(false)} />
-      <ImpressumOverlay open={impressumOpen} onClose={() => setImpressumOpen(false)} />
-      <DatenschutzOverlay open={datenschutzOpen} onClose={() => setDatenschutzOpen(false)} />
+      {/* ── Overlays (lazy, nur laden wenn geöffnet) ─────────────────────── */}
+      <ErrorBoundary>
+        <Suspense fallback={null}>
+          {landingOpen     && <LandingOverlay     open onClose={() => setLandingOpen(false)} />}
+          {creditsOpen     && <CreditsOverlay     open onClose={() => setCreditsOpen(false)} />}
+          {impressumOpen   && <ImpressumOverlay   open onClose={() => setImpressumOpen(false)} />}
+          {datenschutzOpen && <DatenschutzOverlay open onClose={() => setDatenschutzOpen(false)} />}
+        </Suspense>
+      </ErrorBoundary>
 
       {duplicateInfo && (
         <DuplicateDialog

@@ -36,3 +36,8 @@ dist-ssr
 .env.local
 .env.*.local
 *.csv
+
+# Playwright / Test-Artefakte
+.playwright-mcp/
+*.png
+*.jpg
