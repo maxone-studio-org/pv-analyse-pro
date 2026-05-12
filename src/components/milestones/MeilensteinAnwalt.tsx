@@ -1,5 +1,6 @@
 interface Props {
   onBack: () => void
+  onComplete: () => void
 }
 
 const TIPPS = [
@@ -26,7 +27,7 @@ const LINKS = [
   { label: 'advocado.de',       href: 'https://www.advocado.de' },
 ]
 
-export function MeilensteinAnwalt({ onBack }: Props) {
+export function MeilensteinAnwalt({ onBack, onComplete }: Props) {
   return (
     <div className="min-h-[calc(100vh-112px)] flex flex-col">
       <div className="flex-1 max-w-2xl mx-auto w-full px-5 py-8 space-y-5">
@@ -101,6 +102,13 @@ export function MeilensteinAnwalt({ onBack }: Props) {
             kein bezahltes Ranking, nur Relevanz, kostenlose Ersteinschätzung vieler Partner.
           </p>
         </div>
+
+        <button
+          onClick={onComplete}
+          className="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold text-base py-4 rounded-xl transition-colors"
+        >
+          Weiter zu Schritt 5 — Anwalt briefen →
+        </button>
 
         <button
           onClick={onBack}

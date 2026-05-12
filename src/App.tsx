@@ -65,7 +65,7 @@ function App() {
               onPdfExported={() => complete(3)}
             />
           )}
-          {current === 4 && <MeilensteinAnwalt  onBack={() => goTo(3)} />}
+          {current === 4 && <MeilensteinAnwalt  onBack={() => goTo(3)} onComplete={() => complete(4)} />}
           {current === 5 && <MeilensteinBriefing onBack={() => goTo(4)} onComplete={() => complete(5)} />}
         </Suspense>
       </ErrorBoundary>
