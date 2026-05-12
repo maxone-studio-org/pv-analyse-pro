@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Header } from './components/Header'
+import { Prozessleiste } from './components/Prozessleiste'
 import { CsvImport } from './components/CsvImport'
 import { ColumnMapping } from './components/ColumnMapping'
 import { ImportWarnings } from './components/ImportWarnings'
@@ -16,6 +17,11 @@ import { CreditsOverlay } from './components/CreditsOverlay'
 import { CostComparison } from './components/CostComparison'
 import { AllMonthsOverview } from './components/AllMonthsOverview'
 import { DataIntegrityPanel } from './components/DataIntegrityPanel'
+import { MeilensteinDiagnose } from './components/milestones/MeilensteinDiagnose'
+import { MeilensteinExport } from './components/milestones/MeilensteinExport'
+import { MeilensteinAnwalt } from './components/milestones/MeilensteinAnwalt'
+import { MeilensteinBriefing } from './components/milestones/MeilensteinBriefing'
+import { useMilestones } from './hooks/useMilestones'
 import { useAppStore } from './store'
 
 function App() {
@@ -29,81 +35,95 @@ function App() {
   const [landingOpen, setLandingOpen] = useState(false)
   const [creditsOpen, setCreditsOpen] = useState(false)
 
+  const { current, completed, goTo, complete } = useMilestones()
+
   // Restore data from IndexedDB on first load
   useEffect(() => { rehydrate() }, [rehydrate])
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header onCredits={() => setCreditsOpen(true)} />
+      <Prozessleiste current={current} completed={completed} onGoTo={goTo} />
 
-      {/* Persist error banner */}
-      {persistError && (
-        <div className="px-6 py-2">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 flex items-center justify-between">
-            <p className="text-xs text-yellow-800">{persistError}</p>
-            <button
-              onClick={() => useAppStore.setState({ persistError: null })}
-              className="text-yellow-600 hover:text-yellow-800 text-xs font-medium ml-4"
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Milestone 1 — Diagnose */}
+      {current === 1 && <MeilensteinDiagnose onComplete={() => complete(1)} />}
 
-      {/* Loading indicator for data restore */}
-      {rehydrating && (
-        <div className="px-6 py-8 text-center">
-          <div className="inline-flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg px-6 py-3">
-            <svg className="w-5 h-5 text-amber-500 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
-            <span className="text-sm text-amber-800 font-medium">Gespeicherte Daten werden geladen...</span>
-          </div>
-        </div>
-      )}
+      {/* Milestone 2 — Datenexport */}
+      {current === 2 && <MeilensteinExport onComplete={() => complete(2)} />}
 
-      {/* Import area */}
-      <CsvImport />
-      {importStep === 'idle' && (
-        <LandingBanner onOpen={() => setLandingOpen(true)} />
-      )}
-      <ColumnMapping />
-
-      {/* Main content */}
-      {importStep === 'done' && (
-        <div className="px-6 py-4 space-y-4">
-          <ImportWarnings />
-          <GapWarnings />
-          <DataIntegrityPanel />
-
-          <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] gap-4">
-            {/* Sidebar */}
-            <div className="space-y-4">
-              <SimulationConfig />
-              <CostComparison />
-              <ExportPanel />
+      {/* Milestone 3 — SolarProof Analyse (bestehende App) */}
+      {current === 3 && (
+        <>
+          {/* Persist error banner */}
+          {persistError && (
+            <div className="px-6 py-2">
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 flex items-center justify-between">
+                <p className="text-xs text-yellow-800">{persistError}</p>
+                <button
+                  onClick={() => useAppStore.setState({ persistError: null })}
+                  className="text-yellow-600 hover:text-yellow-800 text-xs font-medium ml-4"
+                >
+                  OK
+                </button>
+              </div>
             </div>
+          )}
 
-            {/* Main area */}
-            <div className="space-y-4">
-              <AllMonthsOverview />
-              <Calendar />
-              <MonthSummary />
+          {/* Loading indicator for data restore */}
+          {rehydrating && (
+            <div className="px-6 py-8 text-center">
+              <div className="inline-flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-lg px-6 py-3">
+                <svg className="w-5 h-5 text-amber-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                <span className="text-sm text-amber-800 font-medium">Gespeicherte Daten werden geladen...</span>
+              </div>
             </div>
-          </div>
-        </div>
+          )}
+
+          {/* Import area */}
+          <CsvImport />
+          {importStep === 'idle' && (
+            <LandingBanner onOpen={() => setLandingOpen(true)} />
+          )}
+          <ColumnMapping />
+
+          {/* Analysis results */}
+          {importStep === 'done' && (
+            <div className="px-6 py-4 space-y-4">
+              <ImportWarnings />
+              <GapWarnings />
+              <DataIntegrityPanel />
+
+              <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] lg:grid-cols-[280px_1fr] gap-4">
+                <div className="space-y-4">
+                  <SimulationConfig />
+                  <CostComparison />
+                  <ExportPanel />
+                </div>
+                <div className="space-y-4">
+                  <AllMonthsOverview />
+                  <Calendar />
+                  <MonthSummary />
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
-      {/* Modals / Overlays */}
+      {/* Milestone 4 — Anwalt finden (gesperrt) */}
+      {current === 4 && <MeilensteinAnwalt onBack={() => goTo(3)} />}
+
+      {/* Milestone 5 — Briefing (gesperrt) */}
+      {current === 5 && <MeilensteinBriefing onBack={() => goTo(4)} />}
+
+      {/* Modals — immer im DOM, eigene Sichtbarkeitslogik */}
       <DayDetailModal />
       <LandingOverlay open={landingOpen} onClose={() => setLandingOpen(false)} />
       <CreditsOverlay open={creditsOpen} onClose={() => setCreditsOpen(false)} />
 
-      {/* Chat & Feedback — now handled by <vector-chat> Web Component in index.html */}
-
-      {/* Duplicate detection dialog */}
       {duplicateInfo && (
         <DuplicateDialog
           duplicateCount={duplicateInfo.duplicateCount}
