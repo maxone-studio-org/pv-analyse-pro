@@ -6,7 +6,7 @@
 | 1.0 | Initiale Spezifikation | 2025 | ✅ |
 | 1.1 | Integritätssicherung, Spalten-Mapping, Zeitzonen, Multi-File | 2025 | ✅ |
 | 1.2 | SoC Carry-Over, DateTime-Feld, Duplikaterkennung, Akku-Spalten, Kostenvergleich | 2026 | ✅ vollständig implementiert |
-| 2.0 | Plattform: Geführter Prozess, Vector-Integration, Geschäftsmodell | 2026 | 🔵 M1–M5 gebaut, Phase 7–11 offen |
+| 2.0 | Plattform: Geführter Prozess, Vector-Integration, Geschäftsmodell | 2026 | 🔵 M1–M5 + Phase 7 gebaut, Phase 8–11 offen |
 | Nachtrag | OLG Hamm 11.04.2025 — Landing Page + Kulanz-Check Anpassung | 2026 | ✅ implementiert |
 
 **Produkt:** SolarProof — `solarproof.voltfair.de` → Ziel: `solarproof.de`
@@ -429,7 +429,7 @@ Vollständig implementiert (v1.2). Neu in v2.0:
 | 5 | M4 | Anwalt finden — praktischer Guide + Links + Weiter-CTA | Pflicht | ✅ gebaut |
 | 5 | Landing | v2.0 Hero, 5-Schritte, OLG Hamm Sektion | Pflicht | ✅ gebaut |
 | 6 | M5 | Briefing-Generator | Pflicht | ✅ gebaut |
-| 7 | Vector | Automatisierte Flows | Pflicht | 🔵 offen |
+| 7 | Vector | Automatisierte Flows | Pflicht | ✅ gebaut |
 | 8 | Vector | KI-Einsatz: Kulanz-Check + Premium | Pflicht | 🔵 offen |
 | 9 | Business | Anwaltsnetzwerk-Onboarding | Pflicht | 🔵 offen |
 | 10 | Business | Premium-Modell | Optional | 🔵 offen |
