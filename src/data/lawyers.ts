@@ -17,26 +17,21 @@ export interface Lawyer {
   status?: 'active' | 'pending'
 }
 
-const PANEL_URL = 'https://panel.maxone.one'
-const ANON_KEY  = 'eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJyb2xlIjogImFub24iLCAiaXNzIjogInN1cGFiYXNlIiwgImlhdCI6IDE3Mjk3MjgwMDAsICJleHAiOiAxODg3NDk0NDAwfQ.bkbevdi1DwbqCos2hMTd3UnYAj5PogIBTqjZdOyTGiQ'
+import { PANEL_URL, ANON_KEY } from '../lib/supabase'
 
 export async function fetchLawyers(): Promise<Lawyer[]> {
-  const res = await fetch(`${PANEL_URL}/functions/v1/list-lawyers`, {
-    headers: { 'apikey': ANON_KEY, 'Content-Type': 'application/json' },
-  })
+  const res = await fetch(
+    `${PANEL_URL}/rest/v1/lawyers?status=eq.active&order=listing_typ.desc,senec_faelle.desc`,
+    { headers: { 'apikey': ANON_KEY, 'Accept': 'application/json' } },
+  )
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  const data = await res.json()
-  return data as Lawyer[]
+  return res.json()
 }
 
 export async function addLawyer(lawyer: Omit<Lawyer, 'id'>, adminKey: string): Promise<void> {
-  const res = await fetch(`${PANEL_URL}/functions/v1/add-lawyer`, {
+  const res = await fetch(`${PANEL_URL}/rest/v1/lawyers`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${adminKey}`,
-      'apikey': ANON_KEY,
-    },
+    headers: { ...adminHeaders(adminKey), 'Prefer': 'return=minimal' },
     body: JSON.stringify(lawyer),
   })
   if (!res.ok) {
@@ -114,10 +109,17 @@ export interface LawyerSubmission {
 }
 
 export async function submitLawyer(submission: LawyerSubmission): Promise<void> {
-  const res = await fetch(`${PANEL_URL}/functions/v1/submit-lawyer`, {
+  const body = {
+    ...submission,
+    bundesland: plzToBundesland(submission.plz),
+    schwerpunkte: [],
+    status: 'pending',
+    listing_typ: 'kostenlos',
+  }
+  const res = await fetch(`${PANEL_URL}/rest/v1/lawyers`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}` },
-    body: JSON.stringify(submission),
+    headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}`, 'Prefer': 'return=minimal' },
+    body: JSON.stringify(body),
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
