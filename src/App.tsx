@@ -1,4 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
+import { useAuth } from './hooks/useAuth'
 import { Header } from './components/Header'
 import { Prozessleiste } from './components/Prozessleiste'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -27,6 +28,7 @@ const DatenschutzOverlay   = lazy(() => import('./components/DatenschutzOverlay'
 const AdminOverlay              = lazy(() => import('./components/AdminOverlay').then(m => ({ default: m.AdminOverlay })))
 const UeberUnsOverlay           = lazy(() => import('./components/UeberUnsOverlay').then(m => ({ default: m.UeberUnsOverlay })))
 const AnwaltEmpfehlenOverlay    = lazy(() => import('./components/AnwaltEmpfehlenOverlay').then(m => ({ default: m.AnwaltEmpfehlenOverlay })))
+const AuthOverlay               = lazy(() => import('./components/AuthOverlay').then(m => ({ default: m.AuthOverlay })))
 
 function MilestoneSpinner() {
   return (
@@ -39,6 +41,8 @@ function MilestoneSpinner() {
 // ── App ──────────────────────────────────────────────────────────────────────
 
 function App() {
+  const auth = useAuth()
+
   const rehydrate        = useAppStore((s) => s.rehydrate)
   const duplicateInfo    = useAppStore((s) => s.duplicateInfo)
   const confirmDuplicate = useAppStore((s) => s.confirmDuplicate)
@@ -58,6 +62,7 @@ function App() {
   const [ueberUnsOpen,           setUeberUnsOpen]           = useState(false)
   const [anwaltEmpfehlenOpen,    setAnwaltEmpfehlenOpen]    = useState(false)
   const [adminOpen,              setAdminOpen]              = useState(() => window.location.hash === '#sp-admin')
+  const [authOpen,               setAuthOpen]               = useState(false)
 
   const trustStripItems = useContent<TrustStripItems>('trust_strip', TRUST_STRIP_DEFAULT)
   const { current, completed, goTo, complete } = useMilestones()
@@ -147,6 +152,8 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header
+        auth={auth}
+        onAuth={() => setAuthOpen(true)}
         onUeberUns={() => setUeberUnsOpen(true)}
         onCredits={() => setCreditsOpen(true)}
         onImpressum={() => setImpressumOpen(true)}
@@ -201,6 +208,7 @@ function App() {
           {adminOpen              && <AdminOverlay onClose={() => { setAdminOpen(false); window.location.hash = '' }} />}
           {ueberUnsOpen           && <UeberUnsOverlay open onClose={() => setUeberUnsOpen(false)} />}
           {anwaltEmpfehlenOpen    && <AnwaltEmpfehlenOverlay onClose={() => setAnwaltEmpfehlenOpen(false)} />}
+          {authOpen               && <AuthOverlay auth={auth} onClose={() => setAuthOpen(false)} />}
         </Suspense>
       </ErrorBoundary>
 

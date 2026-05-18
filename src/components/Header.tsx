@@ -1,6 +1,16 @@
 import { useAppStore } from '../store'
+import type { AuthState } from '../hooks/useAuth'
 
-export function Header({ onCredits, onImpressum, onDatenschutz, onUeberUns }: { onCredits: () => void; onImpressum: () => void; onDatenschutz: () => void; onUeberUns: () => void }) {
+interface HeaderProps {
+  auth: AuthState
+  onAuth: () => void
+  onCredits: () => void
+  onImpressum: () => void
+  onDatenschutz: () => void
+  onUeberUns: () => void
+}
+
+export function Header({ auth, onAuth, onCredits, onImpressum, onDatenschutz, onUeberUns }: HeaderProps) {
   const fileMetadataList = useAppStore((s) => s.fileMetadataList)
   const importStep = useAppStore((s) => s.importStep)
 
@@ -31,6 +41,30 @@ export function Header({ onCredits, onImpressum, onDatenschutz, onUeberUns }: { 
       </div>
 
       <div className="flex items-center gap-4">
+        {/* Auth button */}
+        {!auth.loading && (
+          auth.user ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500 hidden sm:block truncate max-w-32" title={auth.user.email}>
+                {auth.user.email}
+              </span>
+              <button
+                onClick={() => auth.signOut()}
+                className="text-xs text-gray-400 hover:text-gray-700 transition-colors border border-gray-200 rounded-lg px-2.5 py-1.5"
+              >
+                Abmelden
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={onAuth}
+              className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors border border-blue-200 rounded-lg px-3 py-1.5"
+            >
+              Anmelden
+            </button>
+          )
+        )}
+
         {firstFile && importStep === 'done' && (
           <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">
             <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">

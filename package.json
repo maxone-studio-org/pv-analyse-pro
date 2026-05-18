@@ -14,6 +14,7 @@
     "test:build": "npx esbuild src/utils/cost.ts src/utils/simulation.ts src/utils/timezone.ts src/utils/csv.ts src/utils/gapDetection.ts --bundle --format=esm --platform=node --outdir=.test-build --out-extension:.js=.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.106.0",
     "chart.js": "^4.5.1",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
