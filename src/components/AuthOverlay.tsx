@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import type { AuthState } from '../hooks/useAuth'
 
 interface Props {
@@ -7,22 +7,68 @@ interface Props {
 }
 
 export function AuthOverlay({ auth, onClose }: Props) {
-  const [email, setEmail]   = useState('')
-  const [sent, setSent]     = useState(false)
+  const [email, setEmail]     = useState('')
+  const [otp, setOtp]         = useState(['', '', '', '', '', ''])
+  const [step, setStep]       = useState<'email' | 'otp'>('email')
   const [loading, setLoading] = useState(false)
-  const [error, setError]   = useState('')
+  const [error, setError]     = useState('')
+  const inputRefs             = useRef<(HTMLInputElement | null)[]>([])
 
-  async function handleSubmit(e: React.FormEvent) {
+  useEffect(() => {
+    if (step === 'otp') inputRefs.current[0]?.focus()
+  }, [step])
+
+  async function sendCode(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
     try {
       await auth.signIn(email.trim())
-      setSent(true)
+      setStep('otp')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unbekannter Fehler')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function confirmCode(e: React.FormEvent) {
+    e.preventDefault()
+    const token = otp.join('')
+    if (token.length < 6) return
+    setLoading(true)
+    setError('')
+    try {
+      await auth.verifyOtp(email.trim(), token)
+      onClose()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ungültiger Code')
+      setOtp(['', '', '', '', '', ''])
+      inputRefs.current[0]?.focus()
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function handleOtpInput(i: number, value: string) {
+    const digit = value.replace(/\D/, '').slice(-1)
+    const next = [...otp]
+    next[i] = digit
+    setOtp(next)
+    if (digit && i < 5) inputRefs.current[i + 1]?.focus()
+  }
+
+  function handleOtpKey(i: number, e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Backspace' && !otp[i] && i > 0) {
+      inputRefs.current[i - 1]?.focus()
+    }
+  }
+
+  function handleOtpPaste(e: React.ClipboardEvent) {
+    const digits = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6).split('')
+    if (digits.length === 6) {
+      setOtp(digits)
+      inputRefs.current[5]?.focus()
     }
   }
 
@@ -31,7 +77,9 @@ export function AuthOverlay({ auth, onClose }: Props) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
 
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-base font-bold text-gray-900">Konto</h2>
+          <h2 className="text-base font-bold text-gray-900">
+            {step === 'email' ? 'Anmelden' : 'Code eingeben'}
+          </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -39,23 +87,10 @@ export function AuthOverlay({ auth, onClose }: Props) {
           </button>
         </div>
 
-        {sent ? (
-          <div className="px-6 py-8 text-center space-y-3">
-            <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto">
-              <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <p className="font-bold text-gray-900">Magic Link gesendet</p>
+        {step === 'email' ? (
+          <form onSubmit={sendCode} className="px-6 py-5 space-y-4">
             <p className="text-sm text-gray-500 leading-relaxed">
-              Schau in dein Postfach bei <strong>{email}</strong> — klick den Link und du bist drin. Kein Passwort nötig.
-            </p>
-            <button onClick={onClose} className="mt-2 text-sm text-gray-400 hover:text-gray-600">Schließen</button>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
-            <p className="text-sm text-gray-500 leading-relaxed">
-              Gib deine E-Mail-Adresse ein — wir schicken dir einen Magic Link. Kein Passwort, kein Abo.
+              Wir schicken dir einen 6-stelligen Code. Kein Passwort, kein Abo.
             </p>
             <input
               type="email"
@@ -72,11 +107,47 @@ export function AuthOverlay({ auth, onClose }: Props) {
               disabled={loading || !email}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-sm py-3 rounded-xl transition-colors"
             >
-              {loading ? 'Wird gesendet …' : 'Magic Link senden →'}
+              {loading ? 'Wird gesendet …' : 'Code senden →'}
             </button>
             <p className="text-xs text-gray-400 text-center">
               Mit der Anmeldung stimmst du zu, dass deine Falldaten optional in der Cloud gespeichert werden können.
             </p>
+          </form>
+        ) : (
+          <form onSubmit={confirmCode} className="px-6 py-5 space-y-4">
+            <p className="text-sm text-gray-500 leading-relaxed">
+              Code an <strong>{email}</strong> gesendet. Gib die 6 Ziffern ein:
+            </p>
+            <div className="flex gap-2 justify-center" onPaste={handleOtpPaste}>
+              {otp.map((d, i) => (
+                <input
+                  key={i}
+                  ref={el => { inputRefs.current[i] = el }}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={d}
+                  onChange={e => handleOtpInput(i, e.target.value)}
+                  onKeyDown={e => handleOtpKey(i, e)}
+                  className="w-11 h-14 text-center text-xl font-bold border-2 border-gray-200 rounded-xl focus:border-blue-400 focus:outline-none transition-colors"
+                />
+              ))}
+            </div>
+            {error && <p className="text-xs text-red-500 text-center">{error}</p>}
+            <button
+              type="submit"
+              disabled={loading || otp.join('').length < 6}
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-sm py-3 rounded-xl transition-colors"
+            >
+              {loading ? 'Wird geprüft …' : 'Bestätigen →'}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setStep('email'); setOtp(['', '', '', '', '', '']); setError('') }}
+              className="w-full text-xs text-gray-400 hover:text-gray-600 py-1"
+            >
+              Andere E-Mail-Adresse
+            </button>
           </form>
         )}
       </div>

@@ -6,6 +6,7 @@ export interface AuthState {
   user: User | null
   loading: boolean
   signIn: (email: string) => Promise<void>
+  verifyOtp: (email: string, token: string) => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -27,15 +28,18 @@ export function useAuth(): AuthState {
   }, [])
 
   async function signIn(email: string) {
-    await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: 'https://solarproof.voltfair.de' },
-    })
+    const { error } = await supabase.auth.signInWithOtp({ email })
+    if (error) throw error
+  }
+
+  async function verifyOtp(email: string, token: string) {
+    const { error } = await supabase.auth.verifyOtp({ email, token, type: 'email' })
+    if (error) throw error
   }
 
   async function signOut() {
     await supabase.auth.signOut()
   }
 
-  return { user, loading, signIn, signOut }
+  return { user, loading, signIn, verifyOtp, signOut }
 }
