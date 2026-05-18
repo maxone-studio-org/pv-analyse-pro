@@ -149,6 +149,24 @@ function App() {
       />
       <Prozessleiste current={current} completed={completed} onGoTo={goTo} />
 
+      {/* ── Trust-Strip ─────────────────────────────────────────────────── */}
+      <div className="bg-amber-50 border-b border-amber-100 px-4 py-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-amber-800">
+        <span>Von SENEC-Betroffenen gebaut</span>
+        <span className="text-amber-300">·</span>
+        <span>Kostenlos</span>
+        <span className="text-amber-300">·</span>
+        <span>Kein Abo</span>
+        <span className="text-amber-300">·</span>
+        <span>Keine Daten verkauft</span>
+        <span className="text-amber-300">·</span>
+        <button
+          onClick={() => setUeberUnsOpen(true)}
+          className="font-semibold underline underline-offset-2 hover:text-amber-900 transition-colors"
+        >
+          Wer steckt dahinter? →
+        </button>
+      </div>
+
       {/* ── Milestone-Inhalt ─────────────────────────────────────────────── */}
       <ErrorBoundary>
         <Suspense fallback={<MilestoneSpinner />}>
