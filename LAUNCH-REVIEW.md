@@ -104,12 +104,16 @@
 - **Geprüft am:** 2026-05-18
 - **Sektionen abgehakt:** A B C D E F G H I J
 - **Wesentliche Änderungen seit 2026-04-27:**
-  - Supabase-Backend hinzugekommen (lawyers-Tabelle, 3 Edge Functions)
-  - Vector Widget eingebunden (eigene Infra)
+  - Supabase-Backend hinzugekommen (lawyers-Tabelle, 4 Edge Functions: list-lawyers, add-lawyer, kulanz-ai, submit-lawyer)
+  - Vector Widget eingebunden (eigene Infra, agent.maxone.one)
   - Premium-Paywall entfernt — B2B-Modell (Anwälte zahlen, Kunden nie)
   - 9 Kanzleien in DB eingetragen
   - localStorage-Tracking `sp-referrals` für Pay-Per-Close
-- **Bekannte Restrisiken:** keine — kulanz-ai-Freitext und Anwalt-Einreichung in Datenschutzerklärung dokumentiert (§§ 5+6, 2026-05-18)
+  - Crowdsourced Anwalt-Einreichung (submit-lawyer, pending-Queue, Admin-Review)
+  - Trust-Strip + „Über uns"-Overlay (Robert + Max, persönlich betroffen)
+  - Datenschutzerklärung vollständig: §5 Vector-Chat, §7 kulanz-ai, §8 Anwalt-Einreichung
+  - Vector-Instanzkontext SolarProof: RDG-Distanzierungsformel, Mandantendaten-Hinweis, professioneller Ton
+- **Bekannte Restrisiken:** keine
 - **Nächstes Re-Review fällig:** bei Login/Auth-Einführung oder nach 12 Monaten
 
 ---
