@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react'
 import { fetchLawyers, plzToBundesland, type Lawyer } from '../../data/lawyers'
 import { AnwaltEmpfehlenForm } from '../AnwaltEmpfehlenForm'
+import { useContent } from '../../hooks/useContent'
+import { ANWALT_TIPPS_DEFAULT, type AnwaltTippsContent } from '../../data/contentDefaults'
 
 interface Props {
   onBack: () => void
   onComplete: () => void
 }
 
-const EXTERNAL_LINKS = [
-  { label: 'anwaltauskunft.de', href: 'https://www.anwaltauskunft.de' },
-  { label: 'advocado.de',       href: 'https://www.advocado.de' },
-]
 
 function AnwaltEmpfehlenCard() {
   const [open, setOpen] = useState(false)
@@ -139,6 +137,7 @@ function trackClick(lawyer: Lawyer, status: 'clicked' | 'contacted') {
 }
 
 export function MeilensteinAnwalt({ onBack, onComplete }: Props) {
+  const tippsContent = useContent<AnwaltTippsContent>('anwalt_tipps', ANWALT_TIPPS_DEFAULT)
   const [plz, setPlz] = useState('')
   const [lawyers, setLawyers] = useState<Lawyer[]>([])
   const [loading, setLoading] = useState(true)
@@ -262,11 +261,7 @@ export function MeilensteinAnwalt({ onBack, onComplete }: Props) {
             <h3 className="text-sm font-semibold text-gray-900">So finden Sie den richtigen Anwalt</h3>
           </div>
           <div className="p-5 space-y-4">
-            {[
-              { title: 'Schwerpunkt: Produkthaftung oder Kaufrecht', desc: 'Suchen Sie nach Anwälten mit Erfahrung in „Produkthaftung", „PV-Anlagen" oder „Kaufrechtsmängel". SENEC-Fälle häufen sich — viele Kanzleien haben bereits Erfahrung.' },
-              { title: 'OLG Hamm als Argument', desc: 'Az. 2 U 5/25 (11.04.2025) — Drosselung auf 70% = Sachmangel, Rücktrittsrecht. Bei Totalausfall gilt das erst recht. Ihr Anwalt kann das sofort einsetzen.' },
-              { title: 'Das bringen Sie mit', desc: 'SolarProof-PDF, Kaufvertrag, alle Schreiben mit SENEC, Kulanz-Angebot wenn vorhanden. Je mehr Dokumentation, desto schneller die Einschätzung.' },
-            ].map((t, i) => (
+            {tippsContent.tipps.map((t, i) => (
               <div key={i} className="flex items-start gap-3.5">
                 <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
                 <div>
@@ -280,7 +275,7 @@ export function MeilensteinAnwalt({ onBack, onComplete }: Props) {
 
         {/* Externe Suchen */}
         <div className="grid grid-cols-2 gap-3">
-          {EXTERNAL_LINKS.map(({ label, href }) => (
+          {tippsContent.externe_links.map(({ label, href }) => (
             <a
               key={href}
               href={href}

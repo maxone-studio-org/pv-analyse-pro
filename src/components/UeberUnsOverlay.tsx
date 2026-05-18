@@ -1,4 +1,6 @@
 import { useEffect, useCallback } from 'react'
+import { useContent } from '../hooks/useContent'
+import { UEBERUNS_DEFAULT, type UeberUnsContent } from '../data/contentDefaults'
 
 interface Props {
   open: boolean
@@ -14,6 +16,7 @@ function Avatar({ initials, color }: { initials: string; color: string }) {
 }
 
 export function UeberUnsOverlay({ open, onClose }: Props) {
+  const c = useContent<UeberUnsContent>('ueberuns', UEBERUNS_DEFAULT)
   const handleClose = useCallback(() => onClose(), [onClose])
 
   useEffect(() => {
@@ -48,15 +51,8 @@ export function UeberUnsOverlay({ open, onClose }: Props) {
         <div>
           <p className="text-xs font-medium uppercase tracking-[0.25em] text-gray-500 mb-3">Von Betroffenen, für Betroffene</p>
           <h1 className="text-3xl font-bold text-gray-900">Wer steckt hinter SolarProof?</h1>
-          <p className="mt-4 text-base text-gray-600 leading-relaxed">
-            SolarProof wurde nicht von Anwälten gebaut — sondern von echten Geschädigten,
-            die zufällig selbst aus der Photovoltaikbranche kommen. Wir wissen, wie die
-            Technik funktioniert, wir wissen, was SENEC verspricht — und wir wissen aus
-            eigener Erfahrung, wann etwas davon nicht stimmt.
-          </p>
-          <p className="mt-3 text-sm text-gray-500 leading-relaxed">
-            Kein Interessenkonflikt. Kein Mandat. Nur Menschen, die dasselbe Problem haben wie Sie.
-          </p>
+          <p className="mt-4 text-base text-gray-600 leading-relaxed">{c.intro_lead}</p>
+          <p className="mt-3 text-sm text-gray-500 leading-relaxed">{c.intro_disclaimer}</p>
         </div>
 
         {/* Personen */}
@@ -66,15 +62,8 @@ export function UeberUnsOverlay({ open, onClose }: Props) {
             <Avatar initials="R" color="bg-amber-500" />
             <div>
               <p className="font-bold text-gray-900 text-lg">Robert</p>
-              <p className="text-sm text-gray-500 mt-0.5">Mitgründer · PV-Fachmann · persönlich betroffen</p>
-              <p className="text-sm text-gray-600 mt-3 leading-relaxed">
-                Robert arbeitet selbst in der Photovoltaikbranche — und trotzdem hat ihn
-                SENEC mit einer defekten Anlage im Stich gelassen. Er weiß, was die
-                Technik leisten sollte, er versteht die Messdaten — und er hat erlebt,
-                wie unverbindlich Kulanz-Angebote formuliert sind, wenn man den
-                Hersteller nicht unter Druck setzen kann.
-                SolarProof entstand aus genau dieser Frustration.
-              </p>
+              <p className="text-sm text-gray-500 mt-0.5">{c.robert_subtitle}</p>
+              <p className="text-sm text-gray-600 mt-3 leading-relaxed">{c.robert_bio}</p>
             </div>
           </div>
 
@@ -82,14 +71,8 @@ export function UeberUnsOverlay({ open, onClose }: Props) {
             <Avatar initials="MK" color="bg-blue-600" />
             <div>
               <p className="font-bold text-gray-900 text-lg">Max Karastelev</p>
-              <p className="text-sm text-gray-500 mt-0.5">Mitgründer · Entwickler · aus der PV-Branche</p>
-              <p className="text-sm text-gray-600 mt-3 leading-relaxed">
-                Max kommt ebenfalls aus der Photovoltaikbranche und kennt die technische
-                Seite von SENEC-Anlagen aus der Praxis. Seine Eltern sind SENEC-Kunden —
-                und stecken mitten im Verfahren. Als er sah, dass es kein vernünftiges
-                Tool gibt, das Betroffene strukturiert durch den Prozess führt,
-                hat er eins gebaut.
-              </p>
+              <p className="text-sm text-gray-500 mt-0.5">{c.max_subtitle}</p>
+              <p className="text-sm text-gray-600 mt-3 leading-relaxed">{c.max_bio}</p>
             </div>
           </div>
         </div>
@@ -97,15 +80,8 @@ export function UeberUnsOverlay({ open, onClose }: Props) {
         {/* Warum kostenlos */}
         <div className="border-t border-gray-100 pt-10 space-y-4">
           <h2 className="text-xl font-bold text-gray-900">Warum ist SolarProof kostenlos?</h2>
-          <p className="text-sm text-gray-600 leading-relaxed">
-            Wir verdienen kein Geld daran, dass Sie die Plattform nutzen.
-            Wir verdienen Geld, wenn ein Anwalt aus unserem Netzwerk Ihren Fall
-            erfolgreich abschließt — erst dann zahlt die Kanzlei eine Provision an uns.
-          </p>
-          <p className="text-sm text-gray-600 leading-relaxed">
-            Das bedeutet: Unser Interesse ist dasselbe wie Ihres. Wir helfen Ihnen
-            nur dann, wenn wir Ihnen wirklich helfen können.
-          </p>
+          <p className="text-sm text-gray-600 leading-relaxed">{c.warum_text1}</p>
+          <p className="text-sm text-gray-600 leading-relaxed">{c.warum_text2}</p>
         </div>
 
         {/* Keine Rechtsberatung */}

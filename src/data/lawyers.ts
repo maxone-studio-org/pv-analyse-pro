@@ -78,6 +78,31 @@ export async function rejectLawyer(id: string, adminKey: string): Promise<void> 
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
 }
 
+export async function fetchAllLawyers(adminKey: string): Promise<Lawyer[]> {
+  const res = await fetch(`${PANEL_URL}/rest/v1/lawyers?order=status.asc,kanzlei.asc`, {
+    headers: { ...adminHeaders(adminKey), 'Accept': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return res.json()
+}
+
+export async function updateLawyer(id: string, updates: Partial<Omit<Lawyer, 'id'>>, adminKey: string): Promise<void> {
+  const res = await fetch(`${PANEL_URL}/rest/v1/lawyers?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { ...adminHeaders(adminKey), 'Prefer': 'return=minimal' },
+    body: JSON.stringify(updates),
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+}
+
+export async function deleteLawyer(id: string, adminKey: string): Promise<void> {
+  const res = await fetch(`${PANEL_URL}/rest/v1/lawyers?id=eq.${id}`, {
+    method: 'DELETE',
+    headers: adminHeaders(adminKey),
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+}
+
 export interface LawyerSubmission {
   name: string
   kanzlei: string

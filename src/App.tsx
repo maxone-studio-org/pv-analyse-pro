@@ -5,6 +5,8 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { DuplicateDialog } from './components/DuplicateDialog'
 import { useMilestones } from './hooks/useMilestones'
 import { useAppStore } from './store'
+import { useContent } from './hooks/useContent'
+import { TRUST_STRIP_DEFAULT, type TrustStripItems } from './data/contentDefaults'
 // Lokale Kopie — verhindert statischen Import von MeilensteinDiagnose (würde Lazy-Chunk brechen)
 const SP_DIAGNOSE_KEY = 'sp-diagnose-result'
 interface DiagnoseSnapshot { modell?: string; defektArt?: string; ampel?: string }
@@ -57,6 +59,7 @@ function App() {
   const [anwaltEmpfehlenOpen,    setAnwaltEmpfehlenOpen]    = useState(false)
   const [adminOpen,              setAdminOpen]              = useState(() => window.location.hash === '#sp-admin')
 
+  const trustStripItems = useContent<TrustStripItems>('trust_strip', TRUST_STRIP_DEFAULT)
   const { current, completed, goTo, complete } = useMilestones()
 
   useEffect(() => { rehydrate() }, [rehydrate])
@@ -153,14 +156,10 @@ function App() {
 
       {/* ── Trust-Strip ─────────────────────────────────────────────────── */}
       <div className="bg-amber-50 border-b border-amber-100 px-4 py-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-amber-800">
-        <span>Von PV-Fachleuten gebaut, die selbst betroffen sind</span>
-        <span className="text-amber-300">·</span>
-        <span>Kostenlos</span>
-        <span className="text-amber-300">·</span>
-        <span>Kein Abo</span>
-        <span className="text-amber-300">·</span>
-        <span>Keine Daten verkauft</span>
-        <span className="text-amber-300">·</span>
+        {trustStripItems.flatMap((item, i) => [
+          <span key={`item-${i}`}>{item}</span>,
+          <span key={`dot-${i}`} className="text-amber-300">·</span>,
+        ])}
         <button
           onClick={() => setUeberUnsOpen(true)}
           className="font-semibold underline underline-offset-2 hover:text-amber-900 transition-colors"
