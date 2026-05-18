@@ -1,3 +1,5 @@
+import { supabase, PANEL_URL, ANON_KEY } from '../lib/supabase'
+
 export interface Lawyer {
   id: string
   name: string
@@ -17,85 +19,63 @@ export interface Lawyer {
   status?: 'active' | 'pending'
 }
 
-import { PANEL_URL, ANON_KEY } from '../lib/supabase'
-
 export async function fetchLawyers(): Promise<Lawyer[]> {
-  const res = await fetch(
-    `${PANEL_URL}/rest/v1/lawyers?status=eq.active&order=listing_typ.desc,senec_faelle.desc`,
-    { headers: { 'apikey': ANON_KEY, 'Accept': 'application/json' } },
-  )
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return res.json()
+  const { data, error } = await supabase
+    .from('lawyers')
+    .select('*')
+    .eq('status', 'active')
+    .order('listing_typ', { ascending: false })
+    .order('senec_faelle', { ascending: false })
+  if (error) throw new Error(error.message)
+  return data as Lawyer[]
 }
 
-export async function addLawyer(lawyer: Omit<Lawyer, 'id'>, adminKey: string): Promise<void> {
-  const res = await fetch(`${PANEL_URL}/rest/v1/lawyers`, {
-    method: 'POST',
-    headers: { ...adminHeaders(adminKey), 'Prefer': 'return=minimal' },
-    body: JSON.stringify(lawyer),
-  })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
-    throw new Error(err.error ?? `HTTP ${res.status}`)
-  }
+export async function addLawyer(lawyer: Omit<Lawyer, 'id'>): Promise<void> {
+  const { error } = await supabase.from('lawyers').insert(lawyer)
+  if (error) throw new Error(error.message)
 }
 
-function adminHeaders(adminKey: string) {
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${adminKey}`,
-    'apikey': adminKey,
-  }
+export async function fetchPendingLawyers(): Promise<Lawyer[]> {
+  const { data, error } = await supabase
+    .from('lawyers')
+    .select('*')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: true })
+  if (error) throw new Error(error.message)
+  return data as Lawyer[]
 }
 
-export async function fetchPendingLawyers(adminKey: string): Promise<Lawyer[]> {
-  const res = await fetch(`${PANEL_URL}/rest/v1/lawyers?status=eq.pending&order=created_at.asc`, {
-    headers: { ...adminHeaders(adminKey), 'Accept': 'application/json' },
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return res.json()
+export async function approveLawyer(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('lawyers')
+    .update({ status: 'active' })
+    .eq('id', id)
+  if (error) throw new Error(error.message)
 }
 
-export async function approveLawyer(id: string, adminKey: string): Promise<void> {
-  const res = await fetch(`${PANEL_URL}/rest/v1/lawyers?id=eq.${id}`, {
-    method: 'PATCH',
-    headers: { ...adminHeaders(adminKey), 'Prefer': 'return=minimal' },
-    body: JSON.stringify({ status: 'active' }),
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+export async function rejectLawyer(id: string): Promise<void> {
+  const { error } = await supabase.from('lawyers').delete().eq('id', id)
+  if (error) throw new Error(error.message)
 }
 
-export async function rejectLawyer(id: string, adminKey: string): Promise<void> {
-  const res = await fetch(`${PANEL_URL}/rest/v1/lawyers?id=eq.${id}`, {
-    method: 'DELETE',
-    headers: adminHeaders(adminKey),
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+export async function fetchAllLawyers(): Promise<Lawyer[]> {
+  const { data, error } = await supabase
+    .from('lawyers')
+    .select('*')
+    .order('status', { ascending: true })
+    .order('kanzlei', { ascending: true })
+  if (error) throw new Error(error.message)
+  return data as Lawyer[]
 }
 
-export async function fetchAllLawyers(adminKey: string): Promise<Lawyer[]> {
-  const res = await fetch(`${PANEL_URL}/rest/v1/lawyers?order=status.asc,kanzlei.asc`, {
-    headers: { ...adminHeaders(adminKey), 'Accept': 'application/json' },
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-  return res.json()
+export async function updateLawyer(id: string, updates: Partial<Omit<Lawyer, 'id'>>): Promise<void> {
+  const { error } = await supabase.from('lawyers').update(updates).eq('id', id)
+  if (error) throw new Error(error.message)
 }
 
-export async function updateLawyer(id: string, updates: Partial<Omit<Lawyer, 'id'>>, adminKey: string): Promise<void> {
-  const res = await fetch(`${PANEL_URL}/rest/v1/lawyers?id=eq.${id}`, {
-    method: 'PATCH',
-    headers: { ...adminHeaders(adminKey), 'Prefer': 'return=minimal' },
-    body: JSON.stringify(updates),
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
-}
-
-export async function deleteLawyer(id: string, adminKey: string): Promise<void> {
-  const res = await fetch(`${PANEL_URL}/rest/v1/lawyers?id=eq.${id}`, {
-    method: 'DELETE',
-    headers: adminHeaders(adminKey),
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+export async function deleteLawyer(id: string): Promise<void> {
+  const { error } = await supabase.from('lawyers').delete().eq('id', id)
+  if (error) throw new Error(error.message)
 }
 
 export interface LawyerSubmission {
@@ -109,23 +89,18 @@ export interface LawyerSubmission {
 }
 
 export async function submitLawyer(submission: LawyerSubmission): Promise<void> {
-  const body = {
+  const { error } = await supabase.from('lawyers').insert({
     ...submission,
     bundesland: plzToBundesland(submission.plz),
     schwerpunkte: [],
     status: 'pending',
     listing_typ: 'kostenlos',
-  }
-  const res = await fetch(`${PANEL_URL}/rest/v1/lawyers`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY, 'Authorization': `Bearer ${ANON_KEY}`, 'Prefer': 'return=minimal' },
-    body: JSON.stringify(body),
   })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
-    throw new Error(err.error ?? `HTTP ${res.status}`)
-  }
+  if (error) throw new Error(error.message)
 }
+
+// Keep for edge-function calls that stay on panel.maxone.one
+export { PANEL_URL, ANON_KEY }
 
 export function plzToBundesland(plz: string): string {
   const n = parseInt(plz.slice(0, 2) || '0')
