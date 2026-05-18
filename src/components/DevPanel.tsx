@@ -1,6 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import type { AuthState } from '../hooks/useAuth'
-import { PANEL_URL } from '../lib/supabase'
+import { PANEL_URL, supabase } from '../lib/supabase'
+
+const DEV_ACCOUNTS = [
+  { label: 'Nutzer',  email: 'test-nutzer@solarproof.dev',  role: 'user',   color: '#334155' },
+  { label: 'Anwalt',  email: 'test-anwalt@solarproof.dev',  role: 'lawyer', color: '#1d4ed8' },
+] as const
+
+const DEV_PASSWORD = 'solarproof-dev-2026'
 
 interface DevPanelProps {
   auth: AuthState
@@ -73,6 +80,12 @@ export function DevPanel({ auth }: DevPanelProps) {
 
   const handleSignOut = () => {
     if (confirm('Wirklich abmelden?')) auth.signOut()
+  }
+
+  async function switchTo(email: string) {
+    await supabase.auth.signOut()
+    await supabase.auth.signInWithPassword({ email, password: DEV_PASSWORD })
+    // onAuthStateChange in useAuth reacts automatically
   }
 
   return (
@@ -159,13 +172,43 @@ export function DevPanel({ auth }: DevPanelProps) {
           {/* Content */}
           <div style={{ padding: '12px 14px', overflowY: 'auto', flex: 1, fontFamily: 'monospace' }}>
             {tab === 'session' && (
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <tbody>
-                  <Row label="user.id" value={auth.user?.id ?? '—'} />
-                  <Row label="email"   value={auth.user?.email ?? '—'} />
-                  <Row label="role"    value={String(auth.user?.app_metadata?.role ?? '—')} />
-                </tbody>
-              </table>
+              <>
+                <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: 12 }}>
+                  <tbody>
+                    <Row label="user.id" value={auth.user?.id ?? '—'} />
+                    <Row label="email"   value={auth.user?.email ?? '—'} />
+                    <Row label="role"    value={String(auth.user?.app_metadata?.role ?? '—')} />
+                  </tbody>
+                </table>
+                <div style={{ borderTop: '1px solid #1e3050', paddingTop: 10 }}>
+                  <div style={{ color: '#64748b', fontSize: 10, marginBottom: 6, letterSpacing: 0.5, textTransform: 'uppercase' }}>
+                    Als Rolle einloggen
+                  </div>
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {DEV_ACCOUNTS.map(acc => (
+                      <button
+                        key={acc.role}
+                        onClick={() => switchTo(acc.email)}
+                        title={acc.email}
+                        style={{
+                          background:   acc.color,
+                          border:       'none',
+                          color:        '#fff',
+                          padding:      '4px 10px',
+                          borderRadius: 4,
+                          cursor:       'pointer',
+                          fontSize:     11,
+                          fontFamily:   'monospace',
+                          opacity:      auth.user?.email === acc.email ? 0.4 : 1,
+                        }}
+                        disabled={auth.user?.email === acc.email}
+                      >
+                        {acc.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
             )}
             {tab === 'build' && (
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
