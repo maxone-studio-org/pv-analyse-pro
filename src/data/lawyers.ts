@@ -44,6 +44,28 @@ export async function addLawyer(lawyer: Omit<Lawyer, 'id'>, adminKey: string): P
   }
 }
 
+export interface LawyerSubmission {
+  name: string
+  kanzlei: string
+  plz: string
+  ort: string
+  website?: string
+  phone?: string
+  beschreibung?: string
+}
+
+export async function submitLawyer(submission: LawyerSubmission): Promise<void> {
+  const res = await fetch(`${PANEL_URL}/functions/v1/submit-lawyer`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': ANON_KEY },
+    body: JSON.stringify(submission),
+  })
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
+    throw new Error(err.error ?? `HTTP ${res.status}`)
+  }
+}
+
 export function plzToBundesland(plz: string): string {
   const n = parseInt(plz.slice(0, 2) || '0')
   if (n >= 1  && n <= 9)  return 'Sachsen/Thüringen/Sachsen-Anhalt'

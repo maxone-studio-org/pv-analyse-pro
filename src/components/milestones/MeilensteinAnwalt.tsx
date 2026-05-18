@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { fetchLawyers, plzToBundesland, type Lawyer } from '../../data/lawyers'
+import { fetchLawyers, submitLawyer, plzToBundesland, type Lawyer } from '../../data/lawyers'
 
 interface Props {
   onBack: () => void
@@ -10,6 +10,138 @@ const EXTERNAL_LINKS = [
   { label: 'anwaltauskunft.de', href: 'https://www.anwaltauskunft.de' },
   { label: 'advocado.de',       href: 'https://www.advocado.de' },
 ]
+
+function AnwaltEmpfehlenCard() {
+  const [open, setOpen]             = useState(false)
+  const [name, setName]             = useState('')
+  const [kanzlei, setKanzlei]       = useState('')
+  const [plz, setPlz]               = useState('')
+  const [ort, setOrt]               = useState('')
+  const [website, setWebsite]       = useState('')
+  const [beschreibung, setBeschreibung] = useState('')
+  const [loading, setLoading]       = useState(false)
+  const [done, setDone]             = useState(false)
+  const [error, setError]           = useState('')
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    try {
+      await submitLawyer({ name, kanzlei, plz, ort, website: website || undefined, beschreibung: beschreibung || undefined })
+      setDone(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (done) {
+    return (
+      <div className="bg-green-50 border border-green-200 rounded-2xl p-5 flex items-start gap-3.5">
+        <div className="w-8 h-8 bg-green-600 rounded-xl flex items-center justify-center flex-shrink-0">
+          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <div>
+          <p className="font-semibold text-green-900 text-sm">Danke für Ihre Empfehlung!</p>
+          <p className="text-xs text-green-700 mt-0.5 leading-relaxed">
+            Wir prüfen den Eintrag und schalten ihn frei — damit helfen Sie anderen SENEC-Betroffenen.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className={`rounded-2xl border-2 transition-colors overflow-hidden ${open ? 'border-blue-300 bg-blue-50' : 'border-dashed border-blue-200 bg-white hover:border-blue-300'}`}>
+      {!open ? (
+        <button
+          onClick={() => setOpen(true)}
+          className="w-full p-5 flex items-center gap-4 text-left"
+        >
+          <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-bold text-gray-900">Kennen Sie einen Anwalt mit SENEC-Erfahrung?</p>
+            <p className="text-xs text-gray-500 mt-0.5">Empfehlen Sie ihn — und helfen Sie anderen Betroffenen deutschlandweit.</p>
+          </div>
+          <svg className="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      ) : (
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold text-blue-900">Anwalt empfehlen</p>
+            <button type="button" onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <input
+                required value={name} onChange={e => setName(e.target.value)}
+                placeholder="Name des Anwalts *"
+                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:border-blue-400 focus:outline-none"
+              />
+            </div>
+            <div className="col-span-2">
+              <input
+                required value={kanzlei} onChange={e => setKanzlei(e.target.value)}
+                placeholder="Kanzleiname *"
+                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:border-blue-400 focus:outline-none"
+              />
+            </div>
+            <input
+              required value={plz} onChange={e => setPlz(e.target.value.replace(/\D/g, '').slice(0, 5))}
+              placeholder="PLZ *" inputMode="numeric" maxLength={5}
+              className="bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:border-blue-400 focus:outline-none"
+            />
+            <input
+              required value={ort} onChange={e => setOrt(e.target.value)}
+              placeholder="Ort *"
+              className="bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:border-blue-400 focus:outline-none"
+            />
+            <div className="col-span-2">
+              <input
+                value={website} onChange={e => setWebsite(e.target.value)}
+                placeholder="Website (optional)"
+                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:border-blue-400 focus:outline-none"
+              />
+            </div>
+            <div className="col-span-2">
+              <textarea
+                value={beschreibung} onChange={e => setBeschreibung(e.target.value)}
+                placeholder="Ihre Erfahrung mit dem Anwalt (optional) — hilft anderen Betroffenen"
+                rows={3}
+                className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm focus:border-blue-400 focus:outline-none resize-none"
+              />
+            </div>
+          </div>
+
+          {error && <p className="text-xs text-red-500">{error}</p>}
+
+          <button
+            type="submit" disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-sm py-3.5 rounded-xl transition-colors"
+          >
+            {loading ? 'Wird eingereicht …' : 'Anwalt empfehlen →'}
+          </button>
+          <p className="text-xs text-gray-400 text-center">Wir prüfen jeden Eintrag vor der Veröffentlichung.</p>
+        </form>
+      )}
+    </div>
+  )
+}
 
 function LawyerCard({ lawyer, onContact }: { lawyer: Lawyer; onContact: (l: Lawyer) => void }) {
   return (
@@ -195,6 +327,9 @@ export function MeilensteinAnwalt({ onBack, onComplete }: Props) {
             </div>
           )}
         </div>
+
+        {/* Anwalt empfehlen */}
+        <AnwaltEmpfehlenCard />
 
         {/* Tipps */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
