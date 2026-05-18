@@ -23,9 +23,9 @@ function AnwaltEmpfehlenCard() {
           </svg>
         </div>
         <div>
-          <p className="font-semibold text-green-900 text-sm">Danke für Ihre Empfehlung!</p>
+          <p className="font-semibold text-green-900 text-sm">Danke für deine Empfehlung!</p>
           <p className="text-xs text-green-700 mt-0.5 leading-relaxed">
-            Wir prüfen den Eintrag und schalten ihn frei — damit helfen Sie anderen SENEC-Betroffenen.
+            Wir prüfen den Eintrag und schalten ihn frei — damit hilfst du anderen SENEC-Betroffenen.
           </p>
         </div>
       </div>
@@ -42,8 +42,8 @@ function AnwaltEmpfehlenCard() {
             </svg>
           </div>
           <div className="flex-1">
-            <p className="text-sm font-bold text-gray-900">Kennen Sie einen Anwalt mit SENEC-Erfahrung?</p>
-            <p className="text-xs text-gray-500 mt-0.5">Empfehlen Sie ihn — und helfen Sie anderen Betroffenen deutschlandweit.</p>
+            <p className="text-sm font-bold text-gray-900">Kennst du einen Anwalt mit SENEC-Erfahrung?</p>
+            <p className="text-xs text-gray-500 mt-0.5">Empfiehl ihn — und hilf anderen Betroffenen deutschlandweit.</p>
           </div>
           <svg className="w-4 h-4 text-blue-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -179,7 +179,7 @@ export function MeilensteinAnwalt({ onBack, onComplete }: Props) {
           <p className="text-sm font-semibold text-blue-600 mb-1">Schritt 4 von 5</p>
           <h1 className="text-2xl font-bold text-gray-900">Anwalt finden</h1>
           <p className="mt-2 text-base text-gray-600 leading-relaxed">
-            Ihr SolarProof-Nachweis ist erstellt. Jetzt brauchen Sie einen Anwalt mit SENEC-Erfahrung.
+            Dein SolarProof-Nachweis ist erstellt. Jetzt brauchst du einen Anwalt mit SENEC-Erfahrung.
           </p>
         </div>
 
@@ -193,15 +193,15 @@ export function MeilensteinAnwalt({ onBack, onComplete }: Props) {
           <div>
             <p className="font-semibold text-green-900">Nachweis erstellt</p>
             <p className="text-sm text-green-700 mt-0.5 leading-relaxed">
-              Ihr SolarProof-PDF mit SHA-256-Hash und RFC 3161-Zeitstempel ist bereit.
-              Zeigen Sie es bei der ersten Anwaltsberatung vor.
+              Dein SolarProof-PDF mit SHA-256-Hash und RFC 3161-Zeitstempel ist bereit.
+              Zeig es bei der ersten Anwaltsberatung vor.
             </p>
           </div>
         </div>
 
         {/* PLZ-Suche */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900">Anwälte in Ihrer Nähe</h3>
+          <h3 className="text-sm font-semibold text-gray-900">Anwälte in deiner Nähe</h3>
           <div className="relative">
             <input
               type="text"
@@ -233,7 +233,7 @@ export function MeilensteinAnwalt({ onBack, onComplete }: Props) {
 
           {!loading && regional.length > 0 && (
             <div className="space-y-3">
-              <p className="text-xs font-medium text-blue-600 uppercase tracking-wide">In Ihrer Region</p>
+              <p className="text-xs font-medium text-blue-600 uppercase tracking-wide">In deiner Region</p>
               {regional.map(l => <LawyerCard key={l.id} lawyer={l} onContact={handleLawyerContact} />)}
             </div>
           )}
@@ -310,9 +310,9 @@ export function MeilensteinAnwalt({ onBack, onComplete }: Props) {
               <p className="text-sm font-semibold text-blue-900">{clickedLawyer.kanzlei} geöffnet</p>
             </div>
             <div>
-              <p className="text-sm font-semibold text-gray-900">Haben Sie bereits Kontakt aufgenommen?</p>
+              <p className="text-sm font-semibold text-gray-900">Hast du bereits Kontakt aufgenommen?</p>
               <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                Ihre Bestätigung schaltet das persönliche Briefing-Paket für Ihren Anwaltstermin frei.
+                Deine Bestätigung schaltet das persönliche Briefing-Paket für deinen Anwaltstermin frei.
               </p>
             </div>
             <button

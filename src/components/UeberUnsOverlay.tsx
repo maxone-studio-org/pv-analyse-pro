@@ -88,7 +88,7 @@ export function UeberUnsOverlay({ open, onClose }: Props) {
         <div className="bg-amber-50 border border-amber-100 rounded-xl px-5 py-4">
           <p className="text-xs text-amber-800 leading-relaxed">
             <strong>Hinweis:</strong> SolarProof ist kein Anwalt und gibt keine Rechtsberatung.
-            Wir helfen Ihnen, Ihren Fall zu dokumentieren und einen geeigneten Anwalt zu finden.
+            Wir helfen dir, deinen Fall zu dokumentieren und einen geeigneten Anwalt zu finden.
             Die rechtliche Einschätzung obliegt ausschließlich dem von Ihnen gewählten Anwalt.
           </p>
         </div>

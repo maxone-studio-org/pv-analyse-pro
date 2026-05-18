@@ -83,7 +83,7 @@ export function LandingOverlay({ open, onClose }: Props) {
             </p>
             <p>
               Und dann die Frage des Richters:
-              <span className="font-semibold text-gray-900"> "Wie hoch ist Ihr tatsächlicher Schaden?"</span>
+              <span className="font-semibold text-gray-900"> "Wie hoch ist dein tatsächlicher Schaden?"</span>
             </p>
             <p>
               Du hast Messdaten aus deinem Wechselrichter. Aber kein Werkzeug, das daraus

@@ -127,8 +127,8 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
   if (step === 'kaufjahr') return shell(
     <>
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Wann haben Sie Ihre Anlage gekauft?</h2>
-        <p className="mt-1 text-sm text-gray-500 leading-relaxed">Das Kaufdatum bestimmt Ihre Gewährleistungsrechte.</p>
+        <h2 className="text-xl font-bold text-gray-900">Wann hast du deine Anlage gekauft?</h2>
+        <p className="mt-1 text-sm text-gray-500 leading-relaxed">Das Kaufdatum bestimmt deine Gewährleistungsrechte.</p>
       </div>
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
         {KAUFJAHRE.map(y => (
@@ -149,8 +149,8 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
   if (step === 'modell') return shell(
     <>
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Welches SENEC-Modell haben Sie?</h2>
-        <p className="mt-1 text-sm text-gray-500">Steht auf dem Gerät oder in Ihren Unterlagen.</p>
+        <h2 className="text-xl font-bold text-gray-900">Welches SENEC-Modell hast du?</h2>
+        <p className="mt-1 text-sm text-gray-500">Steht auf dem Gerät oder in deinen Unterlagen.</p>
       </div>
       <div className="space-y-2">
         {SENEC_MODELLE.map(m => (
@@ -171,7 +171,7 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
   if (step === 'defektArt') return shell(
     <>
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Was ist das Problem mit Ihrem Speicher?</h2>
+        <h2 className="text-xl font-bold text-gray-900">Was ist das Problem mit deinem Speicher?</h2>
         <p className="mt-1 text-sm text-gray-500">Wählen Sie die beste Beschreibung.</p>
       </div>
       <div className="space-y-2.5">
@@ -194,7 +194,7 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
   if (step === 'kommuniziert') return shell(
     <>
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Haben Sie SENEC bereits kontaktiert?</h2>
+        <h2 className="text-xl font-bold text-gray-900">Hast du SENEC bereits kontaktiert?</h2>
         <p className="mt-1 text-sm text-gray-500">Z.B. per E-Mail, Telefon oder über das Kundenportal.</p>
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -216,7 +216,7 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
   if (step === 'kulanzangebot') return shell(
     <>
       <div>
-        <h2 className="text-xl font-bold text-gray-900">Hat SENEC Ihnen ein Kulanz-Angebot gemacht?</h2>
+        <h2 className="text-xl font-bold text-gray-900">Hat SENEC dir ein Kulanz-Angebot gemacht?</h2>
         <p className="mt-1 text-sm text-gray-500">Ein schriftliches oder mündliches Angebot zur Lösung des Problems.</p>
       </div>
       <div className="space-y-2.5">
@@ -246,12 +246,12 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
       <div>
         <h2 className="text-xl font-bold text-gray-900">Was hat der SENEC-Speicher beim Kauf gekostet?</h2>
         <p className="mt-1 text-sm text-gray-500 leading-relaxed">
-          Den einmaligen Kaufpreis des Speichers aus Ihrem Vertrag — keine Strom- oder Betriebskosten.
+          Den einmaligen Kaufpreis des Speichers aus deinem Vertrag — keine Strom- oder Betriebskosten.
         </p>
       </div>
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5">
         <p className="text-xs text-amber-800 leading-relaxed">
-          <strong>Kombi-Kauf (Speicher + Module + Montage)?</strong> Tragen Sie nur den Speicher-Anteil ein.
+          <strong>Kombi-Kauf (Speicher + Module + Montage)?</strong> Trage nur den Speicher-Anteil ein.
           Er steht im Vertrag als eigene Position oder beträgt typisch 30–50 % des Gesamtpreises.
         </p>
       </div>
@@ -281,7 +281,7 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
     <>
       <div>
         <h2 className="text-xl font-bold text-gray-900">Enthält das Angebot eine Verzichtsklausel?</h2>
-        <p className="mt-1 text-sm text-gray-500">Eine Klausel, mit der Sie auf alle weiteren Ansprüche verzichten.</p>
+        <p className="mt-1 text-sm text-gray-500">Eine Klausel, mit der du auf alle weiteren Ansprüche verzichtest.</p>
       </div>
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5">
         <p className="text-xs text-amber-800 leading-relaxed">
@@ -360,7 +360,7 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
       text: 'text-green-800',
       heading: 'Angebot annehmen',
       icon: '✓',
-      body: 'Das Angebot deckt Ihren Schaden vollständig ab — ohne Haken. Sie können es annehmen.',
+      body: 'Das Angebot deckt deinen Schaden vollständig ab — ohne Haken. Du kannst es annehmen.',
     },
     gelb: {
       wrap: 'bg-amber-50 border-amber-200',
@@ -368,7 +368,7 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
       text: 'text-amber-800',
       heading: 'Anwalt konsultieren',
       icon: '!',
-      body: 'Das Angebot deckt nicht Ihren vollen Schaden. Lassen Sie es von einem Anwalt prüfen, bevor Sie unterschreiben.',
+      body: 'Das Angebot deckt nicht deinen vollen Schaden. Lass es von einem Anwalt prüfen, bevor du unterschreibst.',
     },
     rot: {
       wrap: 'bg-red-50 border-red-200',
@@ -377,7 +377,7 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
       heading: 'Angebot ablehnen',
       icon: '✗',
       body: answers.verzichtsklausel === 'ja'
-        ? 'Das Angebot enthält eine Verzichtsklausel. Mit Ihrer Unterschrift verlieren Sie alle weiteren Ansprüche — und das kann erheblich mehr sein.'
+        ? 'Das Angebot enthält eine Verzichtsklausel. Mit deiner Unterschrift verlierst du alle weiteren Ansprüche — und das kann erheblich mehr sein.'
         : 'Nach dem Urteil des OLG Hamm vom 11.04.2025 stellt bereits eine Drosselung auf 70% einen Sachmangel dar, der zum Rücktritt berechtigt. Bei einem Totalausfall gilt das erst recht.',
     },
   }
@@ -394,7 +394,7 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
 
         <div>
           <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-0.5">Schritt 1 · Diagnose</p>
-          <h2 className="text-xl font-bold text-gray-900">Ihre Einschätzung</h2>
+          <h2 className="text-xl font-bold text-gray-900">Deine Einschätzung</h2>
         </div>
 
         {ampel && (
@@ -424,10 +424,10 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
               </svg>
             </div>
-            <h3 className="text-sm font-semibold text-gray-900">Vector analysiert Ihr Angebot</h3>
+            <h3 className="text-sm font-semibold text-gray-900">Vector analysiert dein Angebot</h3>
           </div>
           <p className="text-xs text-gray-500 leading-relaxed">
-            Optional: Fügen Sie den Wortlaut Ihres SENEC-Angebots ein — Vector gibt Ihnen eine persönliche Einschätzung.
+            Optional: Füge den Wortlaut deines SENEC-Angebots ein — Vector gibt dir eine persönliche Einschätzung.
           </p>
           <textarea
             value={angebotText}
@@ -463,7 +463,7 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900">Ihre möglichen Ansprüche</h3>
+          <h3 className="text-sm font-semibold text-gray-900">Deine möglichen Ansprüche</h3>
           <ul className="space-y-2.5">
             {ansprueche.map((a, i) => (
               <li key={i} className="flex items-start gap-2.5">

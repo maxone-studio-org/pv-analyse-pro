@@ -125,7 +125,7 @@ export function DatenschutzOverlay({ open, onClose }: Props) {
             Es werden keine personenbezogenen Daten erhoben — es gibt keine Registrierung, keinen Account.
           </p>
           <p className="mt-3 font-medium text-gray-800">
-            Wichtig: Geben Sie bitte keine mandantenbezogenen oder personenbezogenen Informationen
+            Wichtig: Gib bitte keine mandantenbezogenen oder personenbezogenen Informationen
             in den Chat ein. Der Chat ist nicht für vertrauliche Falldaten geeignet.
           </p>
           <p className="mt-3">

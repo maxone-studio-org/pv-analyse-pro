@@ -29,7 +29,7 @@ const AMPEL_LABELS: Record<string, string> = {
 }
 
 function buildEmail(r: DiagnoseResult | null): string {
-  const modell  = r?.modell    || '[Ihr SENEC-Modell]'
+  const modell  = r?.modell    || '[dein SENEC-Modell]'
   const kaufjahr = r?.kaufjahr  || '[Kaufjahr]'
   const defekt  = r?.defektArt  ? (DEFEKT_LABELS[r.defektArt] ?? r.defektArt) : '[Defekt beschreiben]'
   const kommuniziert = r?.kommuniziert === 'ja'
@@ -76,7 +76,7 @@ Rechtliche Grundlage: OLG Hamm, Az. 2 U 5/25 (11.04.2025) — Drosselung auf 70%
 Ich bitte um eine Ersteinschätzung meines Falls.
 
 Mit freundlichen Grüßen
-[Ihr Name]
+[dein Name]
 [Adresse]
 [Telefon / E-Mail]`.trim()
 }
@@ -124,17 +124,17 @@ export function MeilensteinBriefing({ onBack, onComplete }: Props) {
           </div>
           <div>
             <p className="text-sm font-semibold text-green-600 mb-1">Alle 5 Schritte abgeschlossen</p>
-            <h1 className="text-xl font-bold text-gray-900">Ihr Briefing-Paket ist fertig</h1>
+            <h1 className="text-xl font-bold text-gray-900">Dein Briefing-Paket ist fertig</h1>
           </div>
           <p className="text-base text-gray-600 leading-relaxed">
-            Sie haben alles, was Ihr Anwalt für eine Ersteinschätzung braucht.
-            Schicken Sie das SolarProof-PDF + die E-Mail ab — und warten Sie auf Rückmeldung.
+            Du hast alles, was dein Anwalt für eine Ersteinschätzung braucht.
+            Schick das SolarProof-PDF + die E-Mail ab — und warte auf Rückmeldung.
           </p>
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-left">
             <p className="text-xs font-semibold text-blue-900 mb-2">Nächste Schritte</p>
             <ol className="text-xs text-blue-800 space-y-1.5 list-decimal list-inside">
               <li>SolarProof-PDF aus Schritt 3 öffnen</li>
-              <li>E-Mail-Vorlage an Ihren Anwalt senden</li>
+              <li>E-Mail-Vorlage an deinen Anwalt senden</li>
               <li>SolarProof-PDF als Anhang hinzufügen</li>
             </ol>
           </div>
@@ -151,7 +151,7 @@ export function MeilensteinBriefing({ onBack, onComplete }: Props) {
           <p className="text-sm font-semibold text-blue-600 mb-1">Schritt 5 von 5</p>
           <h1 className="text-2xl font-bold text-gray-900">Anwalt briefen</h1>
           <p className="mt-2 text-base text-gray-600 leading-relaxed">
-            Ihr Briefing-Paket ist vollständig. Kopieren Sie die E-Mail-Vorlage und hängen Sie das SolarProof-PDF an.
+            Dein Briefing-Paket ist vollständig. Kopiere die E-Mail-Vorlage und hänge das SolarProof-PDF an.
           </p>
         </div>
 
@@ -177,7 +177,7 @@ export function MeilensteinBriefing({ onBack, onComplete }: Props) {
         {/* Diagnose-Zusammenfassung wenn verfügbar */}
         {result && (
           <div className="bg-gray-50 rounded-2xl border border-gray-100 p-5 space-y-2">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Ihre Diagnose-Daten</h3>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">Deine Diagnose-Daten</h3>
             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
               <span className="text-gray-500">Kaufjahr</span>
               <span className="font-medium text-gray-800">{result.kaufjahr || '—'}</span>
@@ -235,7 +235,7 @@ export function MeilensteinBriefing({ onBack, onComplete }: Props) {
               className="w-full text-xs text-gray-700 font-mono leading-relaxed bg-gray-50 rounded-xl border border-gray-100 p-4 resize-none focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
             <p className="text-xs text-gray-400 mt-2">
-              Passen Sie die Vorlage an und fügen Sie das SolarProof-PDF als Anhang hinzu.
+              Passe die Vorlage an und füge das SolarProof-PDF als Anhang hinzu.
             </p>
           </div>
         </div>
@@ -243,7 +243,7 @@ export function MeilensteinBriefing({ onBack, onComplete }: Props) {
         {/* Hinweis */}
         <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4">
           <p className="text-xs text-amber-800 leading-relaxed">
-            <strong>Hinweis:</strong> Ersetzen Sie alle Felder in eckigen Klammern [Ihr Name] etc.
+            <strong>Hinweis:</strong> Ersetze alle Felder in eckigen Klammern [dein Name] etc.
             SolarProof gibt keine Rechtsberatung — die E-Mail-Vorlage ist ein Ausgangspunkt, kein fertiggestelltes Schreiben.
           </p>
         </div>

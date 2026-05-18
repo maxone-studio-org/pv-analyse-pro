@@ -54,7 +54,7 @@ export function AnwaltEmpfehlenForm({ onSuccess }: Props) {
         </div>
         <div className="col-span-2">
           <textarea value={beschreibung} onChange={e => setBeschreibung(e.target.value)}
-            placeholder="Ihre Erfahrung mit dem Anwalt (optional) — hilft anderen Betroffenen"
+            placeholder="Deine Erfahrung mit dem Anwalt (optional) — hilft anderen Betroffenen"
             rows={3} className={`${inputCls} resize-none`} />
         </div>
       </div>

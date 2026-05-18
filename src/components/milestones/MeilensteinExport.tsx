@@ -8,7 +8,7 @@ const SENEC_STEPS = [
   {
     n: 1,
     action: 'mein-senec.de aufrufen und einloggen',
-    detail: 'Nutzen Sie Ihre SENEC-Kundendaten. Bei Problemen: „Passwort vergessen" auf der Login-Seite.',
+    detail: 'Nutze deine SENEC-Kundendaten. Bei Problemen: „Passwort vergessen" auf der Login-Seite.',
   },
   {
     n: 2,
@@ -28,14 +28,14 @@ const SENEC_STEPS = [
   {
     n: 5,
     action: 'Datei speichern — im nächsten Schritt hochladen',
-    detail: 'Speichern Sie die Datei auf Ihrem Gerät. In Schritt 3 können Sie sie direkt hochladen.',
+    detail: 'Speichere die Datei auf deinem Gerät. In Schritt 3 kannst du sie direkt hochladen.',
   },
 ]
 
 const PROBLEME: { q: string; a: ReactNode }[] = [
   {
     q: 'Ich komme nicht in mein SENEC-Konto.',
-    a: 'Nutzen Sie die „Passwort vergessen"-Funktion auf mein-senec.de. Falls das Konto nicht existiert: Registrieren Sie sich mit der E-Mail-Adresse aus Ihrem Kaufvertrag.',
+    a: 'Nutze die „Passwort vergessen"-Funktion auf mein-senec.de. Falls das Konto nicht existiert: Registriere dich mit der E-Mail-Adresse aus deinem Kaufvertrag.',
   },
   {
     q: 'Ich sehe keinen Export-Button.',
@@ -43,13 +43,13 @@ const PROBLEME: { q: string; a: ReactNode }[] = [
       <div className="space-y-3">
         <p>
           Bei älteren SENEC-Modellen (V2 und früher) sind Messdaten manchmal nur per Anfrage
-          beim Kundendienst erhältlich. Das ist Ihr Recht:{' '}
-          <strong>Art. 15 DSGVO verpflichtet SENEC, Ihre personenbezogenen Daten auf Anfrage herauszugeben.</strong>
+          beim Kundendienst erhältlich. Das ist dein Recht:{' '}
+          <strong>Art. 15 DSGVO verpflichtet SENEC, deine personenbezogenen Daten auf Anfrage herauszugeben.</strong>
         </p>
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-3.5 space-y-2">
           <p className="text-xs font-semibold text-gray-700">Vorlage: E-Mail an service@senec.com</p>
           <p className="text-xs text-gray-500 italic">
-            Betreff: Auskunft und Herausgabe Messdaten gem. Art. 15 DSGVO — Kundennr. [Ihre Nummer]
+            Betreff: Auskunft und Herausgabe Messdaten gem. Art. 15 DSGVO — Kundennr. [deine Nummer]
           </p>
           <p className="text-xs text-gray-600 leading-relaxed italic">
             „Sehr geehrte Damen und Herren, ich bitte um Herausgabe meiner vollständigen Messdaten
@@ -70,7 +70,7 @@ const PROBLEME: { q: string; a: ReactNode }[] = [
   },
   {
     q: 'Die Datei ist leer oder enthält keine sinnvollen Daten.',
-    a: 'Das ist kein Fehler Ihrerseits — es ist ein weiteres Indiz. Eine leere oder fehlerhafte Exportdatei belegt, dass SENEC selbst keine verwertbaren Messdaten führt. Laden Sie die Datei trotzdem hoch.',
+    a: 'Das ist kein Fehler von dir — es ist ein weiteres Indiz. Eine leere oder fehlerhafte Exportdatei belegt, dass SENEC selbst keine verwertbaren Messdaten führt. Lade die Datei trotzdem hoch.',
   },
   {
     q: 'Ich habe mehrere CSV-Dateien (z.B. eine pro Monat).',
@@ -89,7 +89,7 @@ export function MeilensteinExport({ onComplete }: Props) {
           <p className="text-sm font-semibold text-blue-600 mb-1">Schritt 2 von 5</p>
           <h1 className="text-2xl font-bold text-gray-900">Daten exportieren</h1>
           <p className="mt-2 text-base text-gray-600 leading-relaxed">
-            Laden Sie Ihre SENEC-Messdaten herunter. Folgen Sie den 5 Schritten unten.
+            Lade deine SENEC-Messdaten herunter. Folge den 5 Schritten unten.
           </p>
         </div>
 
