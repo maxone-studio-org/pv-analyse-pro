@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+
+const KULANZ_AI_URL = 'https://panel.maxone.one/functions/v1/kulanz-ai'
 
 export const DIAGNOSE_RESULT_KEY = 'sp-diagnose-result'
 
@@ -81,6 +83,11 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
   const saved = loadSaved()
   const [history, setHistory] = useState<Step[]>(saved.history)
   const [answers, setAnswers] = useState<Answers>(saved.answers)
+  const [angebotText, setAngebotText] = useState('')
+  const [aiAnalysis, setAiAnalysis] = useState<string | null>(null)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
+  const analysisRef = useRef<HTMLDivElement>(null)
 
   const step = history[history.length - 1]
 
@@ -93,6 +100,34 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
     try { localStorage.removeItem(DIAGNOSE_RESULT_KEY) } catch {}
     setHistory(['kaufjahr'])
     setAnswers(EMPTY)
+    setAiAnalysis(null)
+    setAiError(null)
+    setAngebotText('')
+  }
+
+  async function analyzeWithVector() {
+    setAiLoading(true)
+    setAiError(null)
+    setAiAnalysis(null)
+    try {
+      const aw = parseFloat(answers.anlagenwert)
+      const kb = parseFloat(answers.kulanzBetrag)
+      const pct = !isNaN(aw) && aw > 0 && !isNaN(kb) && kb > 0 ? Math.round((kb / aw) * 100) : null
+      const diagnose = { ...answers, ampel: computeAmpel(), coveragePct: pct }
+      const res = await fetch(KULANZ_AI_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ diagnose, angebotText: angebotText.trim() || undefined }),
+      })
+      const data = await res.json()
+      if (!res.ok || data.error) throw new Error(data.error ?? 'Unbekannter Fehler')
+      setAiAnalysis(data.analysis)
+      setTimeout(() => analysisRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+    } catch (e) {
+      setAiError(e instanceof Error ? e.message : String(e))
+    } finally {
+      setAiLoading(false)
+    }
   }
 
   const questionSteps: Step[] = [
@@ -479,6 +514,52 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
             )}
           </div>
         )}
+
+        {/* Vector KI-Analyse */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-gray-900 flex items-center justify-center flex-shrink-0">
+              <svg className="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+              </svg>
+            </div>
+            <h3 className="text-sm font-semibold text-gray-900">Vector analysiert Ihr Angebot</h3>
+          </div>
+          <p className="text-xs text-gray-500 leading-relaxed">
+            Optional: Fügen Sie den Wortlaut Ihres SENEC-Angebots ein — Vector gibt Ihnen eine persönliche Einschätzung.
+          </p>
+          <textarea
+            value={angebotText}
+            onChange={e => setAngebotText(e.target.value)}
+            placeholder="Wortlaut des Kulanz-Angebots (optional) ..."
+            rows={3}
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-3 text-sm text-gray-800 placeholder-gray-400 focus:border-blue-400 focus:outline-none resize-none"
+          />
+          <button
+            onClick={analyzeWithVector}
+            disabled={aiLoading}
+            className="w-full py-3 rounded-xl text-sm font-semibold text-white bg-gray-900 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+          >
+            {aiLoading ? (
+              <>
+                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+                Vector analysiert …
+              </>
+            ) : 'Jetzt analysieren →'}
+          </button>
+          {aiError && (
+            <p className="text-xs text-red-600 leading-relaxed">Fehler: {aiError}</p>
+          )}
+          {aiAnalysis && (
+            <div ref={analysisRef} className="bg-gray-900 rounded-xl p-4 space-y-2">
+              <p className="text-xs font-semibold text-cyan-400 uppercase tracking-wide">Vector</p>
+              <p className="text-sm text-gray-100 leading-relaxed whitespace-pre-wrap">{aiAnalysis}</p>
+            </div>
+          )}
+        </div>
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
           <h3 className="text-sm font-semibold text-gray-900">Ihre möglichen Ansprüche</h3>
