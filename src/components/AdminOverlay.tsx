@@ -11,7 +11,6 @@ interface Props {
 }
 
 const EMPTY_FORM = {
-  adminKey: '',
   name: '',
   kanzlei: '',
   email: '',
@@ -29,14 +28,13 @@ const EMPTY_FORM = {
 
 // ── Tab: Anwalt hinzufügen ────────────────────────────────────────────────────
 
-function AddTab({ savedKey, onKeySaved }: { savedKey: string; onKeySaved: (k: string) => void }) {
-  const [form, setForm] = useState({ ...EMPTY_FORM, adminKey: savedKey })
+function AddTab() {
+  const [form, setForm] = useState({ ...EMPTY_FORM })
   const [status, setStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle')
   const [error, setError] = useState('')
 
   function set(k: keyof typeof EMPTY_FORM, v: string | boolean) {
     setForm(prev => ({ ...prev, [k]: v }))
-    if (k === 'adminKey') onKeySaved(v as string)
   }
 
   async function submit(e: React.FormEvent) {
@@ -59,9 +57,9 @@ function AddTab({ savedKey, onKeySaved }: { savedKey: string; onKeySaved: (k: st
         erstberatung_eur: form.erstberatung_kostenlos ? null : (parseInt(form.erstberatung_eur) || null),
         beschreibung: form.beschreibung || undefined,
         listing_typ: form.listing_typ,
-      }, form.adminKey)
+      })
       setStatus('ok')
-      setForm(prev => ({ ...EMPTY_FORM, adminKey: prev.adminKey }))
+      setForm({ ...EMPTY_FORM })
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
       setStatus('error')
@@ -83,17 +81,7 @@ function AddTab({ savedKey, onKeySaved }: { savedKey: string; onKeySaved: (k: st
 
   return (
     <form onSubmit={submit} className="px-6 py-5 space-y-4">
-      <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">Admin-Key (Supabase Service Role Key)</label>
-        <input
-          type="password" required value={form.adminKey}
-          onChange={e => set('adminKey', e.target.value)}
-          placeholder="eyJ..."
-          className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono text-gray-700 focus:border-blue-400 focus:outline-none"
-        />
-      </div>
-
-      <div className="border-t border-gray-100 pt-4 grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3">
         {field('Name', 'name', 'Dr. Max Mustermann')}
         {field('Kanzlei', 'kanzlei', 'Muster & Partner')}
         {field('E-Mail', 'email', 'kanzlei@example.de')}
@@ -167,20 +155,19 @@ function AddTab({ savedKey, onKeySaved }: { savedKey: string; onKeySaved: (k: st
 
 // ── Tab: Ausstehende Einreichungen ────────────────────────────────────────────
 
-function PendingTab({ savedKey, onKeySaved }: { savedKey: string; onKeySaved: (k: string) => void }) {
-  const [adminKey, setAdminKey] = useState(savedKey)
-  const [pending, setPending]   = useState<Lawyer[]>([])
-  const [loading, setLoading]   = useState(false)
-  const [error, setError]       = useState('')
-  const [acting, setActing]     = useState<string | null>(null)
+function PendingTab() {
+  const [pending, setPending] = useState<Lawyer[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState('')
+  const [acting, setActing]   = useState<string | null>(null)
+
+  useEffect(() => { load() }, [])
 
   async function load() {
-    if (!adminKey) return
     setLoading(true)
     setError('')
     try {
-      const data = await fetchPendingLawyers(adminKey)
-      setPending(data)
+      setPending(await fetchPendingLawyers())
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -191,7 +178,7 @@ function PendingTab({ savedKey, onKeySaved }: { savedKey: string; onKeySaved: (k
   async function approve(id: string) {
     setActing(id)
     try {
-      await approveLawyer(id, adminKey)
+      await approveLawyer(id)
       setPending(prev => prev.filter(l => l.id !== id))
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
@@ -203,7 +190,7 @@ function PendingTab({ savedKey, onKeySaved }: { savedKey: string; onKeySaved: (k
   async function reject(id: string) {
     setActing(id)
     try {
-      await rejectLawyer(id, adminKey)
+      await rejectLawyer(id)
       setPending(prev => prev.filter(l => l.id !== id))
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
@@ -214,25 +201,17 @@ function PendingTab({ savedKey, onKeySaved }: { savedKey: string; onKeySaved: (k
 
   return (
     <div className="px-6 py-5 space-y-4">
-      <div className="flex gap-2">
-        <input
-          type="password" value={adminKey}
-          onChange={e => { setAdminKey(e.target.value); onKeySaved(e.target.value) }}
-          placeholder="Admin-Key (Service Role Key)"
-          className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono text-gray-700 focus:border-blue-400 focus:outline-none"
-        />
-        <button onClick={load} disabled={!adminKey || loading}
+      <div className="flex justify-end">
+        <button onClick={load} disabled={loading}
           className="px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
-          {loading ? '…' : 'Laden'}
+          {loading ? '…' : 'Neu laden'}
         </button>
       </div>
 
       {error && <p className="text-xs text-red-500 break-all">{error}</p>}
 
       {!loading && pending.length === 0 && !error && (
-        <p className="text-sm text-gray-400 text-center py-6">
-          {adminKey ? 'Keine ausstehenden Einreichungen.' : 'Admin-Key eingeben und laden.'}
-        </p>
+        <p className="text-sm text-gray-400 text-center py-6">Keine ausstehenden Einreichungen.</p>
       )}
 
       <div className="space-y-3">
@@ -297,9 +276,8 @@ function lawyerToForm(l: Lawyer) {
 
 type LawyerForm = ReturnType<typeof lawyerToForm>
 
-function EditLawyerCard({ lawyer, adminKey, onSaved, onDeleted }: {
+function EditLawyerCard({ lawyer, onSaved, onDeleted }: {
   lawyer: Lawyer
-  adminKey: string
   onSaved: (updated: Lawyer) => void
   onDeleted: (id: string) => void
 }) {
@@ -336,7 +314,7 @@ function EditLawyerCard({ lawyer, adminKey, onSaved, onDeleted }: {
         listing_typ: form.listing_typ,
         status: form.status as 'active' | 'pending',
       }
-      await updateLawyer(lawyer.id, updates, adminKey)
+      await updateLawyer(lawyer.id, updates)
       setOk(true)
       onSaved({ ...lawyer, ...updates })
     } catch (e) {
@@ -350,7 +328,7 @@ function EditLawyerCard({ lawyer, adminKey, onSaved, onDeleted }: {
     if (!window.confirm(`${lawyer.name} wirklich löschen?`)) return
     setDeleting(true)
     try {
-      await deleteLawyer(lawyer.id, adminKey)
+      await deleteLawyer(lawyer.id)
       onDeleted(lawyer.id)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
@@ -451,11 +429,11 @@ function EditLawyerCard({ lawyer, adminKey, onSaved, onDeleted }: {
           {ok && <p className="text-xs text-green-600">Gespeichert.</p>}
 
           <div className="flex gap-2 pt-1">
-            <button onClick={save} disabled={saving || !adminKey}
+            <button onClick={save} disabled={saving}
               className="flex-1 py-2 rounded-lg text-xs font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
               {saving ? 'Speichert …' : 'Speichern'}
             </button>
-            <button onClick={del} disabled={deleting || !adminKey}
+            <button onClick={del} disabled={deleting}
               className="px-3 py-2 rounded-lg text-xs font-semibold bg-red-50 text-red-600 hover:bg-red-100 disabled:opacity-50 transition-colors">
               {deleting ? '…' : 'Löschen'}
             </button>
@@ -466,18 +444,18 @@ function EditLawyerCard({ lawyer, adminKey, onSaved, onDeleted }: {
   )
 }
 
-function EditTab({ savedKey, onKeySaved }: { savedKey: string; onKeySaved: (k: string) => void }) {
-  const [adminKey, setAdminKey] = useState(savedKey)
-  const [lawyers, setLawyers]   = useState<Lawyer[]>([])
-  const [loading, setLoading]   = useState(false)
-  const [error, setError]       = useState('')
+function EditTab() {
+  const [lawyers, setLawyers] = useState<Lawyer[]>([])
+  const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState('')
+
+  useEffect(() => { load() }, [])
 
   async function load() {
-    if (!adminKey) return
     setLoading(true)
     setError('')
     try {
-      setLawyers(await fetchAllLawyers(adminKey))
+      setLawyers(await fetchAllLawyers())
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -487,23 +465,17 @@ function EditTab({ savedKey, onKeySaved }: { savedKey: string; onKeySaved: (k: s
 
   return (
     <div className="px-6 py-5 space-y-4">
-      <div className="flex gap-2">
-        <input type="password" value={adminKey}
-          onChange={e => { setAdminKey(e.target.value); onKeySaved(e.target.value) }}
-          placeholder="Admin-Key (Service Role Key)"
-          className="flex-1 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono text-gray-700 focus:border-blue-400 focus:outline-none" />
-        <button onClick={load} disabled={!adminKey || loading}
+      <div className="flex justify-end">
+        <button onClick={load} disabled={loading}
           className="px-4 py-2 rounded-lg text-sm font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
-          {loading ? '…' : 'Laden'}
+          {loading ? '…' : 'Neu laden'}
         </button>
       </div>
 
       {error && <p className="text-xs text-red-500 break-all">{error}</p>}
 
       {!loading && lawyers.length === 0 && !error && (
-        <p className="text-sm text-gray-400 text-center py-6">
-          {adminKey ? 'Keine Anwälte gefunden.' : 'Admin-Key eingeben und laden.'}
-        </p>
+        <p className="text-sm text-gray-400 text-center py-6">Keine Anwälte gefunden.</p>
       )}
 
       <div className="space-y-2">
@@ -511,7 +483,6 @@ function EditTab({ savedKey, onKeySaved }: { savedKey: string; onKeySaved: (k: s
           <EditLawyerCard
             key={l.id}
             lawyer={l}
-            adminKey={adminKey}
             onSaved={updated => setLawyers(prev => prev.map(x => x.id === updated.id ? updated : x))}
             onDeleted={id => setLawyers(prev => prev.filter(x => x.id !== id))}
           />
@@ -535,8 +506,8 @@ function SaveButton({ onClick, saving, ok }: { onClick: () => void; saving: bool
   )
 }
 
-function InhalteTab({ savedKey, onKeySaved }: { savedKey: string; onKeySaved: (k: string) => void }) {
-  const [adminKey, setAdminKey] = useState(savedKey)
+function InhalteTab() {
+  const [adminKey, setAdminKey] = useState('')
   const [error, setError]       = useState('')
 
   // Trust-Strip
@@ -601,10 +572,10 @@ function InhalteTab({ savedKey, onKeySaved }: { savedKey: string; onKeySaved: (k
   return (
     <div className="px-6 py-5 space-y-6">
       <div>
-        <label className="block text-xs font-medium text-gray-600 mb-1">Admin-Key</label>
+        <label className="block text-xs font-medium text-gray-600 mb-1">CMS-Key (panel.maxone.one Service Role)</label>
         <input type="password" value={adminKey}
-          onChange={e => { setAdminKey(e.target.value); onKeySaved(e.target.value) }}
-          placeholder="Service Role Key — nur zum Speichern nötig"
+          onChange={e => setAdminKey(e.target.value)}
+          placeholder="eyJ… — nur zum Speichern nötig"
           className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm font-mono text-gray-700 focus:border-blue-400 focus:outline-none" />
       </div>
 
@@ -695,8 +666,7 @@ function InhalteTab({ savedKey, onKeySaved }: { savedKey: string; onKeySaved: (k
 type Tab = 'pending' | 'add' | 'edit' | 'inhalte'
 
 export function AdminOverlay({ onClose }: Props) {
-  const [tab, setTab]           = useState<Tab>('pending')
-  const [savedKey, setSavedKey] = useState('')
+  const [tab, setTab] = useState<Tab>('pending')
 
   const tabs: [Tab, string][] = [
     ['pending',  'Einreichungen'],
@@ -734,10 +704,10 @@ export function AdminOverlay({ onClose }: Props) {
           ))}
         </div>
 
-        {tab === 'pending'  && <PendingTab  savedKey={savedKey} onKeySaved={setSavedKey} />}
-        {tab === 'add'      && <AddTab      savedKey={savedKey} onKeySaved={setSavedKey} />}
-        {tab === 'edit'     && <EditTab     savedKey={savedKey} onKeySaved={setSavedKey} />}
-        {tab === 'inhalte'  && <InhalteTab  savedKey={savedKey} onKeySaved={setSavedKey} />}
+        {tab === 'pending'  && <PendingTab />}
+        {tab === 'add'      && <AddTab />}
+        {tab === 'edit'     && <EditTab />}
+        {tab === 'inhalte'  && <InhalteTab />}
 
       </div>
     </div>
