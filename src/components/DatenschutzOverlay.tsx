@@ -110,9 +110,59 @@ export function DatenschutzOverlay({ open, onClose }: Props) {
           </p>
         </section>
 
+        {/* KI-Kulanzbewertung */}
+        <section>
+          <h2 className="text-base font-semibold text-gray-900 mb-3">5. KI-Kulanzbewertung (optional)</h2>
+          <p>
+            In Schritt 1 kannst du freiwillig den Wortlaut deines SENEC-Kulanzangebots eingeben,
+            um eine KI-gestützte Einschätzung zu erhalten. Dieses Textfeld ist <strong>vollständig optional</strong> —
+            du kannst SolarProof ohne diese Funktion vollständig nutzen.
+          </p>
+          <p className="mt-3">
+            Gibst du Text ein und klickst auf „Angebot analysieren", wird <strong>ausschließlich der eingegebene
+            Angebotstext</strong> an unsere KI-Infrastruktur (maxone, EU-Server) übertragen. Der Text enthält
+            typischerweise keine personenbezogenen Daten (kein Name, keine Adresse). Er wird für die
+            Dauer der Analyse verarbeitet und nicht dauerhaft gespeichert.
+          </p>
+          <p className="mt-3">
+            Rechtsgrundlage: Einwilligung durch aktive Eingabe und Absenden (Art. 6 Abs. 1 lit. a DSGVO).
+            Du kannst auf die Funktion jederzeit verzichten, ohne Nachteile für die übrige Nutzung.
+          </p>
+        </section>
+
+        {/* Anwaltsliste und Einreichung */}
+        <section>
+          <h2 className="text-base font-semibold text-gray-900 mb-3">6. Anwaltsliste und Anwalt-Einreichung</h2>
+          <p>
+            SolarProof ruft eine öffentliche Liste von Anwälten mit SENEC-Erfahrung von unserem
+            Server ab (maxone, EU-Server). Diese Daten sind öffentlich zugänglich und enthalten
+            ausschließlich berufliche Informationen (Name, Kanzlei, Standort, Schwerpunkte).
+          </p>
+          <p className="mt-3">
+            Du hast die Möglichkeit, einen Anwalt zur Aufnahme in die Liste vorzuschlagen. Dabei
+            überträgst du folgende Angaben an unseren Server:
+          </p>
+          <ul className="mt-2 space-y-1 list-disc list-inside text-gray-600">
+            <li>Name des Anwalts und Kanzlei (Pflichtfelder)</li>
+            <li>PLZ und Ort (Pflichtfelder)</li>
+            <li>Website des Anwalts (optional)</li>
+            <li>Deine Erfahrung mit dem Anwalt in Freitext (optional)</li>
+          </ul>
+          <p className="mt-3">
+            Die Angaben beziehen sich auf den Anwalt, nicht auf dich persönlich. Der optionale
+            Erfahrungstext kann jedoch indirekt Rückschlüsse auf deine Person ermöglichen.
+            Einreichungen werden vor der Veröffentlichung manuell geprüft. Nicht freigegebene
+            Einreichungen werden gelöscht.
+          </p>
+          <p className="mt-3">
+            Rechtsgrundlage: Einwilligung durch aktives Absenden des Formulars
+            (Art. 6 Abs. 1 lit. a DSGVO).
+          </p>
+        </section>
+
         {/* localStorage */}
         <section>
-          <h2 className="text-base font-semibold text-gray-900 mb-3">5. Lokale Speicherung (localStorage)</h2>
+          <h2 className="text-base font-semibold text-gray-900 mb-3">7. Lokale Speicherung (localStorage)</h2>
           <p>
             SolarProof speichert Fortschritt und Analyseergebnisse ausschließlich im localStorage
             deines Browsers — lokal auf deinem Gerät, nicht auf einem Server. Diese Daten verlassen
@@ -126,7 +176,7 @@ export function DatenschutzOverlay({ open, onClose }: Props) {
 
         {/* Rechte */}
         <section>
-          <h2 className="text-base font-semibold text-gray-900 mb-3">6. Deine Rechte (Art. 15–21 DSGVO)</h2>
+          <h2 className="text-base font-semibold text-gray-900 mb-3">8. Deine Rechte (Art. 15–21 DSGVO)</h2>
           <p>
             Da wir keine personenbezogenen Daten erheben, gibt es de facto nichts zu beauskunften,
             zu korrigieren oder zu löschen. Solltest du dennoch Fragen zum Datenschutz haben,

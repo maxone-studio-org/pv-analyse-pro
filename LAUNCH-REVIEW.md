@@ -109,7 +109,7 @@
   - Premium-Paywall entfernt — B2B-Modell (Anwälte zahlen, Kunden nie)
   - 9 Kanzleien in DB eingetragen
   - localStorage-Tracking `sp-referrals` für Pay-Per-Close
-- **Bekannte Restrisiken:** kulanz-ai verarbeitet optionalen Freitext-Input — Datenschutzhinweis in Datenschutzerklärung ergänzen
+- **Bekannte Restrisiken:** keine — kulanz-ai-Freitext und Anwalt-Einreichung in Datenschutzerklärung dokumentiert (§§ 5+6, 2026-05-18)
 - **Nächstes Re-Review fällig:** bei Login/Auth-Einführung oder nach 12 Monaten
 
 ---
