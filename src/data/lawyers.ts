@@ -2,6 +2,7 @@ export interface Lawyer {
   id: string
   name: string
   kanzlei: string
+  email?: string
   plz: string
   ort: string
   bundesland: string

@@ -567,7 +567,7 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
 
         {/* Premium CTA */}
         <PremiumCtaCard
-          onPremiumActive={isPremium() ? () => analyzeWithVector(true) : undefined}
+          onPremiumActive={isPremium() ? () => { analyzeWithVector(true) } : undefined}
         />
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
