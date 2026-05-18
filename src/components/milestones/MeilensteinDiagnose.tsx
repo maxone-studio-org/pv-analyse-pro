@@ -1,65 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
+import { KAUFJAHRE, SENEC_MODELLE, DEFEKTE } from './diagnose-constants'
+import {
+  type Answers, type Step, type DiagnoseResult,
+  DIAGNOSE_RESULT_KEY, EMPTY,
+  loadSaved, computeAmpel, getAnsprueche,
+} from './diagnose-utils'
 
 const KULANZ_AI_URL = 'https://panel.maxone.one/functions/v1/kulanz-ai'
 
-export const DIAGNOSE_RESULT_KEY = 'sp-diagnose-result'
-
-export interface DiagnoseResult {
-  kaufjahr: string
-  modell: string
-  defektArt: string
-  kommuniziert: string
-  kulanzangebot: string
-  anlagenwert: string
-  verzichtsklausel: string
-  kulanzBetrag: string
-  ampel: 'gruen' | 'gelb' | 'rot' | null
-  coveragePct: number | null
-}
-
-type Step =
-  | 'kaufjahr' | 'modell' | 'defektArt' | 'kommuniziert'
-  | 'kulanzangebot' | 'anlagenwert' | 'verzichtsklausel'
-  | 'kulanzBetrag' | 'ergebnis'
-
-interface Answers {
-  kaufjahr: string
-  modell: string
-  defektArt: string
-  kommuniziert: string
-  kulanzangebot: string
-  anlagenwert: string
-  verzichtsklausel: string
-  kulanzBetrag: string
-}
-
-const EMPTY: Answers = {
-  kaufjahr: '', modell: '', defektArt: '', kommuniziert: '',
-  kulanzangebot: '', anlagenwert: '', verzichtsklausel: '', kulanzBetrag: '',
-}
-
-import { KAUFJAHRE, SENEC_MODELLE, DEFEKTE } from './diagnose-constants'
-
-function loadSaved(): { history: Step[]; answers: Answers } {
-  try {
-    const raw = localStorage.getItem(DIAGNOSE_RESULT_KEY)
-    if (!raw) return { history: ['kaufjahr'], answers: EMPTY }
-    const r = JSON.parse(raw) as DiagnoseResult
-    const a: Answers = {
-      kaufjahr:        r.kaufjahr        ?? '',
-      modell:          r.modell          ?? '',
-      defektArt:       r.defektArt       ?? '',
-      kommuniziert:    r.kommuniziert    ?? '',
-      kulanzangebot:   r.kulanzangebot   ?? '',
-      anlagenwert:     r.anlagenwert     ?? '',
-      verzichtsklausel: r.verzichtsklausel ?? '',
-      kulanzBetrag:    r.kulanzBetrag    ?? '',
-    }
-    return { history: ['kaufjahr', 'ergebnis'], answers: a }
-  } catch {
-    return { history: ['kaufjahr'], answers: EMPTY }
-  }
-}
+export type { DiagnoseResult }
+export { DIAGNOSE_RESULT_KEY }
 
 interface Props { onComplete: () => void }
 
@@ -97,7 +47,7 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
       const aw = parseFloat(answers.anlagenwert)
       const kb = parseFloat(answers.kulanzBetrag)
       const pct = !isNaN(aw) && aw > 0 && !isNaN(kb) && kb > 0 ? Math.round((kb / aw) * 100) : null
-      const diagnose = { ...answers, ampel: computeAmpel(), coveragePct: pct }
+      const diagnose = { ...answers, ampel: computeAmpel(answers), coveragePct: pct }
       const body: Record<string, unknown> = { diagnose, angebotText: angebotText.trim() || undefined }
       const res = await fetch(KULANZ_AI_URL, {
         method: 'POST',
@@ -122,40 +72,6 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
   const totalQ = questionSteps.length
   const currentQ = Math.max(1, questionSteps.indexOf(step) + 1)
 
-  function computeAmpel(): 'gruen' | 'gelb' | 'rot' | null {
-    if (answers.kulanzangebot !== 'ja') return null
-    if (answers.verzichtsklausel === 'ja') return 'rot'
-    if (answers.defektArt === 'drosselung') return 'rot'
-    const aw = parseFloat(answers.anlagenwert)
-    const kb = parseFloat(answers.kulanzBetrag)
-    if (!isNaN(aw) && aw > 0 && !isNaN(kb) && kb > 0) {
-      const pct = (kb / aw) * 100
-      if (pct >= 100) return 'gruen'
-      if (pct >= 80) return 'gelb'
-      return 'rot'
-    }
-    return answers.verzichtsklausel === 'nein' ? 'gelb' : 'rot'
-  }
-
-  function getAnsprueche(): string[] {
-    const age = 2026 - (parseInt(answers.kaufjahr) || 2020)
-    const result: string[] = []
-    if (age <= 2)
-      result.push('Gesetzliche Gewährleistung (2 Jahre) — automatisch gültig')
-    else if (age <= 5)
-      result.push('Gesetzliche Gewährleistung abgelaufen — SENEC-Garantie prüfen (meist 5–10 Jahre)')
-    else
-      result.push('Gewährleistung abgelaufen — Ihren Garantievertrag mit SENEC prüfen')
-    if (answers.defektArt === 'drosselung')
-      result.push('Sachmangel: OLG Hamm Az. 2 U 5/25 (11.04.2025) — Drosselung = Rücktrittsrecht')
-    else if (answers.defektArt === 'totalausfall')
-      result.push('Erheblicher Sachmangel — Rücktritt und Schadensersatz möglich')
-    else if (answers.defektArt === 'teilausfall')
-      result.push('Sachmangel — Nachbesserung fordern; bei Fehlschlagen: Rücktritt')
-    if (answers.kommuniziert === 'nein')
-      result.push('Tipp: Mangel schriftlich bei SENEC melden — startet Fristen')
-    return result
-  }
 
   // Persist result to localStorage so M5 can read it
   useEffect(() => {
@@ -165,7 +81,7 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
     const pct = !isNaN(aw) && aw > 0 && !isNaN(kb) && kb > 0
       ? Math.round((kb / aw) * 100)
       : null
-    const result: DiagnoseResult = { ...answers, ampel: computeAmpel(), coveragePct: pct }
+    const result: DiagnoseResult = { ...answers, ampel: computeAmpel(answers), coveragePct: pct }
     try { localStorage.setItem(DIAGNOSE_RESULT_KEY, JSON.stringify(result)) } catch {}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step])
@@ -434,8 +350,8 @@ export function MeilensteinDiagnose({ onComplete }: Props) {
 
   // ─── Ergebnis ──────────────────────────────────────────────────────────────
 
-  const ampel = computeAmpel()
-  const ansprueche = getAnsprueche()
+  const ampel = computeAmpel(answers)
+  const ansprueche = getAnsprueche(answers)
 
   const AMPEL_CFG = {
     gruen: {
