@@ -1,6 +1,6 @@
 name: Deploy SolarProof to voltfair-cli
 
-# Standard 002: Build auf GitHub-hosted ubuntu-latest, Transfer via SSH.
+# Standard 002: Build auf Self-Hosted Runner (maxone-staging), Transfer via SSH.
 # Kein Build auf voltfair-cli (= Prod-Server).
 
 on:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, maxone-staging]
     steps:
       - uses: actions/checkout@v4
 
