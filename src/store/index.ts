@@ -12,6 +12,7 @@ import type {
 import type { CostParams } from '../types/cost'
 import { autoDetectMapping, parseCSVPreview, parseCSVWithMapping, validateMapping, detectInputUnit, detectImplausibleValues } from '../utils/csv'
 import { mergeCSVTexts } from '../utils/csv-merge'
+import { yieldToUI } from '../utils/async'
 import type { InputUnit } from '../types'
 import { processRawData } from '../utils/timezone'
 import { runSimulation } from '../utils/simulation'
@@ -19,8 +20,6 @@ import { computeSHA256 } from '../utils/hash'
 import { detectDataGaps, deduplicateIntervals } from '../utils/gapDetection'
 import { saveState, loadState, clearState, type PersistedState } from './persist'
 
-/** Yield to browser for a frame so UI can update (loading indicators, etc.) */
-const yieldToUI = () => new Promise<void>((resolve) => setTimeout(resolve, 0))
 
 
 export type ImportStep = 'idle' | 'mapping' | 'processing' | 'done'
