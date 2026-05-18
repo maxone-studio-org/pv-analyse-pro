@@ -55,7 +55,23 @@ export function AuthOverlay({ auth, onClose }: Props) {
     const next = [...otp]
     next[i] = digit
     setOtp(next)
-    if (digit && i < 5) inputRefs.current[i + 1]?.focus()
+    if (digit && i < 5) {
+      inputRefs.current[i + 1]?.focus()
+    } else if (digit && i === 5) {
+      const token = next.join('')
+      if (token.length === 6) {
+        setLoading(true)
+        setError('')
+        auth.verifyOtp(email.trim(), token)
+          .then(onClose)
+          .catch(err => {
+            setError(err instanceof Error ? err.message : 'Ungültiger Code')
+            setOtp(['', '', '', '', '', ''])
+            inputRefs.current[0]?.focus()
+          })
+          .finally(() => setLoading(false))
+      }
+    }
   }
 
   function handleOtpKey(i: number, e: React.KeyboardEvent<HTMLInputElement>) {
@@ -69,6 +85,16 @@ export function AuthOverlay({ auth, onClose }: Props) {
     if (digits.length === 6) {
       setOtp(digits)
       inputRefs.current[5]?.focus()
+      setLoading(true)
+      setError('')
+      auth.verifyOtp(email.trim(), digits.join(''))
+        .then(onClose)
+        .catch(err => {
+          setError(err instanceof Error ? err.message : 'Ungültiger Code')
+          setOtp(['', '', '', '', '', ''])
+          inputRefs.current[0]?.focus()
+        })
+        .finally(() => setLoading(false))
     }
   }
 
