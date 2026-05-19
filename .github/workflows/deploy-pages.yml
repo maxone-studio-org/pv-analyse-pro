@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: [self-hosted, maxone-staging]
+    runs-on: [self-hosted, voltfair-cli]
     steps:
       - uses: actions/checkout@v4
 
@@ -35,7 +35,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: [self-hosted, maxone-staging]
+    runs-on: [self-hosted, voltfair-cli]
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
