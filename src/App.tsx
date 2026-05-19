@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense } from 'react'
 import { useAuth } from './hooks/useAuth'
 import { useCaseSync } from './hooks/useCaseSync'
 import { Header } from './components/Header'
+import { Footer } from './components/Footer'
 import { Prozessleiste } from './components/Prozessleiste'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { DuplicateDialog } from './components/DuplicateDialog'
@@ -238,6 +239,7 @@ function App() {
           </Suspense>
         </ErrorBoundary>
 
+        <Footer onImpressum={() => setImpressumOpen(true)} onDatenschutz={() => setDatenschutzOpen(true)} />
         <DevPanel auth={auth} />
       </div>
     )
@@ -316,6 +318,7 @@ function App() {
         </Suspense>
       </ErrorBoundary>
 
+      <Footer onImpressum={() => setImpressumOpen(true)} onDatenschutz={() => setDatenschutzOpen(true)} />
       <DevPanel auth={auth} />
 
       {duplicateInfo && (
