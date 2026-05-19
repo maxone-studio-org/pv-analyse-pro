@@ -127,6 +127,21 @@ Modell 3 als Premium-Option sobald Win-Rate-Daten aus echten Fällen vorliegen.
 
 ---
 
+## Threat-Model
+
+| Bedrohung                              | Wahrscheinlichkeit | Auswirkung | Maßnahme                                                          |
+|----------------------------------------|--------------------|------------|-------------------------------------------------------------------|
+| KI-Halluzination (Kulanz-Analyse)      | mittel             | mittel     | Disclaimer + kein verbindlicher Rechtsbescheid — nur Orientierung |
+| Falsche Anwaltsdaten (veraltete DB)    | mittel             | mittel     | Admin-Edit + Anwalt-selbst-Onboarding (Phase 2)                   |
+| Scraping der Anwaltsliste              | hoch               | niedrig    | anon-Key ist öffentlich — Anwaltsdaten sind sowieso öffentlich    |
+| PDF-Manipulation nach Download         | niedrig            | mittel     | RFC 3161-Zeitstempel macht Manipulationen nachweisbar              |
+| Missbrauch Lead-Empfehlung (Spam)      | mittel             | niedrig    | localStorage ohne Account — kein persistenter State auf Server    |
+| DSGVO-Verstoß (Sonderdaten Art. 9)     | niedrig            | hoch       | Tool verarbeitet nur Geräte- und Vertragsinfos — keine Gesundheitsdaten |
+
+**Ergebnis:** Kein High-Risk-Szenario, das eine DSFA nach Art. 35 DSGVO auslöst.
+
+---
+
 ## Gate 1 — Konzept-Sign-Off
 
 - **Vorgeschlagen von:** Max Karastelev (@karastoni) + Robert
