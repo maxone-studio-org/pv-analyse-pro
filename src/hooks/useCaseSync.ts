@@ -49,6 +49,9 @@ export function useCaseSync(user: User | null): SyncStatus {
         costParams:        cloud.costParams,
         costCapOverrides:  cloud.costCapOverrides,
       })
+      if (cloud.diagnose) {
+        localStorage.setItem('sp-diagnose-result', JSON.stringify(cloud.diagnose))
+      }
     })
   }, [user, importStep, fileMetadataList.length])
 
