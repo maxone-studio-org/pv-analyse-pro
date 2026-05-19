@@ -1,8 +1,5 @@
 name: Deploy SolarProof to voltfair-cli
 
-# Standard 002: Build auf Self-Hosted Runner (maxone-staging), Transfer via SSH.
-# Kein Build auf voltfair-cli (= Prod-Server).
-
 on:
   push:
     branches: [main]
@@ -16,52 +13,13 @@ jobs:
       - name: Build Docker image
         run: docker build -t solarproof-app:latest .
 
-      - name: Save image as tarball
-        run: docker save solarproof-app:latest | gzip > solarproof-app.tar.gz
-
-      - name: Setup SSH
-        env:
-          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+      - name: Deploy
         run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "$SERVER_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-
-      - name: Transfer image to voltfair-cli
-        env:
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-        run: |
-          cat solarproof-app.tar.gz | ssh -i ~/.ssh/deploy_key "$SERVER_USER@$SERVER_HOST" "gunzip | docker load"
-
-      - name: Sync compose file to server
-        env:
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-        run: |
-          scp -i ~/.ssh/deploy_key docker-compose.yml "$SERVER_USER@$SERVER_HOST:/opt/solarproof/docker-compose.yml"
-
-      - name: Deploy on voltfair-cli
-        env:
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-        run: |
-          ssh -i ~/.ssh/deploy_key "$SERVER_USER@$SERVER_HOST" \
-            "cd /opt/solarproof && docker compose up -d --force-recreate && docker image prune -f"
+          cp docker-compose.yml /opt/solarproof/docker-compose.yml
+          cd /opt/solarproof && docker compose up -d --force-recreate && docker image prune -f
 
       - name: Health check
-        env:
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
           sleep 5
-          ssh -i ~/.ssh/deploy_key "$SERVER_USER@$SERVER_HOST" \
-            "docker inspect --format='{{.State.Health.Status}}' solarproof-app 2>/dev/null || docker ps --filter name=solarproof-app --format '{{.Status}}'"
-
-      - name: Cleanup
-        if: always()
-        run: |
-          rm -f solarproof-app.tar.gz ~/.ssh/deploy_key
-          docker image prune -f 2>/dev/null || true
+          docker inspect --format='{{.State.Health.Status}}' solarproof-app 2>/dev/null \
+            || docker ps --filter name=solarproof-app --format '{{.Status}}'
